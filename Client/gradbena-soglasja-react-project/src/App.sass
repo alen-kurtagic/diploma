@@ -1,81 +1,31 @@
-
-$primaryColor: #ffffff
-$secondaryColor: #0D99FF
-$primaryFontSize: 1.1rem
-$secondaryFontSize: 1rem
-$darkgray: #B4B4B4
+@import "variables.sass"
+@import "./components/Confirm/confirm.sass"
+@import "./components/Header/header.sass"
+@import "./components/Map/map.sass"
+@import "./components/Search/search.sass"
+@import "./components/Autocomplete/autocomplete.sass"
 
 html, body, #root
   width: 100%
   height: 100%
   overflow: hidden
 
+:focus
+  outline: none
+
+.hidden
+  display: none
+
 #root
   display: flex
   flex-direction: column
 
-.map
-  width: 100%
-  height: 100%
+::-webkit-scrollbar
+  width: 4px
 
-.header
-  width: 100%
-  height: 25%
-  box-sizing: content-box
-  display: flex
-  flex-direction: column
-  justify-content: center
-  padding: 25px 50px 25px 50px
+::-webkit-scrollbar-track
+  background: transparent
 
-.titles
-  margin-left: 25px
-
-.search-container
-  display: flex
-  width: 45%
-  align-items: center
-  position: relative
-
-.search-container input
-  width: 100%
-  height: 45px
-  border-radius: 50px
-  border: none
-  background-color: #f4f4f4
-  padding-left: 25px
-  font-size: $primaryFontSize
-
-.search-container input::placeholder
-  color: $darkgray
-
-.search-container img
-  height: 35px
-  width: 35px
-  position: absolute
-  right: 15px
-  cursor: pointer
-
-.confirm
-  position: absolute
-  right: 15px
-  bottom: 15px
-  background-color: $darkgray
-  width: 65px
-  height: 50px
-  display: flex
-  justify-content: center
-  align-items: center
-
-.confirm img
-  height: 30px
-  width: 30px
-@keyframes spin
-  from
-    transform: rotate(0deg)
-
-  to
-    transform: rotate(360deg)
-
-@media (prefers-reduced-motion: no-preference)
-  a:nth-of-type(2) .logo
-    animation: spin infinite 20s linear
+::-webkit-scrollbar-thumb
+  background: $darkgray
+  border-radius: 20px
