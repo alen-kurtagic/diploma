@@ -6,7 +6,7 @@ const Header = () => {
     <div className="header">
       <span className="titles">
         <p className="h2">Gradbena soglasja</p>
-        <p className="lead">
+        <p className="font-weight-bold">
           Prikaži vsa potrebna javno dostopna prostorska soglasja
         </p>
       </span>

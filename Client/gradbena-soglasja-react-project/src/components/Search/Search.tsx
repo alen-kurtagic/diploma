@@ -1,17 +1,14 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import Autocomplete from "../Autocomplete/Autocomplete";
-import getAutocompleteResults, {
-  APIAutocompleteItem,
-} from "../../api/autocomplete";
-import { ViewStateContext } from "../../App";
-import proj4 from "proj4";
+import Suggestions from "../Suggestions/Suggestions";
+import { AppContext } from "../../App";
+import { APISuggestion } from "../../types/types";
+import getSuggestions from "../../api/suggestions";
 
 const Search = () => {
-  const viewStateContext = useContext(ViewStateContext);
+  const appContext = useContext(AppContext);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState("");
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [inputValue, setInputValue] = useState<string>("");
   const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
 
   const handleFocus = () => {
@@ -26,29 +23,28 @@ const Search = () => {
     const value = e.target.value;
     setInputValue(value);
     if (value.length > 0) {
-      const results = await getAutocompleteResults(value);
+      const results = await getSuggestions(value);
       setAutocompleteSuggestions(results);
     } else {
       setAutocompleteSuggestions([]);
     }
   };
-
+  // This function handles keyboard events in the input field.
+  // If the user presses "Enter", it fetches search suggestions using
+  // "getSuggestions" function and goes to the first suggestion's location.
+  // If the user presses "Escape", it removes focus from the input field.
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key == "Enter" && inputRef.current) {
-      const results = getAutocompleteResults(inputRef.current.value);
-      results.then((value) => {
-        const result: APIAutocompleteItem = value[0];
-        const point1 = proj4("EPSG:3794", "EPSG:3857", [result.x1, result.y1]);
-        const point2 = proj4("EPSG:3794", "EPSG:3857", [result.x2, result.y2]);
-        viewStateContext.flyTo({
-          point1: point1,
-          point2: point2,
-        });
-        setInputValue(result.ac_text);
-        inputRef.current?.blur();
+    if (event.key == "Enter" && appContext.inputRef.current) {
+      const suggestions = getSuggestions(appContext.inputRef.current.value);
+      suggestions.then((suggestions: APISuggestion[]) => {
+        const firstSuggestion = suggestions[0];
+        appContext.goToLocation({ location: firstSuggestion });
+        setInputValue(firstSuggestion.ac_text);
+        appContext.inputRef.current?.blur();
       });
-    } else if (event.key == "Escape" && inputRef.current) {
-      inputRef.current.blur();
+    } else if (event.key == "Escape" && appContext.inputRef.current) {
+      event.stopPropagation();
+      appContext.inputRef.current.blur();
     }
   };
 
@@ -66,7 +62,7 @@ const Search = () => {
     <div className="search-autocomplete-container">
       <div className="search-container">
         <input
-          ref={inputRef}
+          ref={appContext.inputRef}
           placeholder="Išči parcele..."
           value={inputValue}
           onChange={handleInputChange}
@@ -84,11 +80,12 @@ const Search = () => {
         )}
       </div>
       {isFocused && (
-        <Autocomplete
+        <Suggestions
           className="autocomplete-container"
           handleInputValue={handleInputValue}
-          autocompleteSuggestions={autocompleteSuggestions}
-        ></Autocomplete>
+          suggestions={autocompleteSuggestions}
+          inputValue={inputValue}
+        ></Suggestions>
       )}
     </div>
   );
