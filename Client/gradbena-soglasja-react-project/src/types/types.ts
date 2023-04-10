@@ -12,6 +12,8 @@ interface goToParams {
 
 interface APISuggestion {
     id: number;
+    cityName: string;
+    locationName: string | null;
     ac_text: string;
     ac_group: string;
     x1: number;

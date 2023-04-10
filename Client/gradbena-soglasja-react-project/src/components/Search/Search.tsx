@@ -9,7 +9,7 @@ const Search = () => {
 
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>("");
-  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -22,11 +22,12 @@ const Search = () => {
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
+    const reversedString = value.split(",").reverse().join(", ");
     if (value.length > 0) {
-      const results = await getSuggestions(value);
-      setAutocompleteSuggestions(results);
+      const results = await getSuggestions(reversedString);
+      setSuggestions(results);
     } else {
-      setAutocompleteSuggestions([]);
+      setSuggestions([]);
     }
   };
   // This function handles keyboard events in the input field.
@@ -55,7 +56,7 @@ const Search = () => {
   const handleClear = (event: React.PointerEvent<HTMLImageElement>) => {
     event.preventDefault();
     setInputValue("");
-    setAutocompleteSuggestions([]);
+    setSuggestions([]);
   };
 
   return (
@@ -83,7 +84,7 @@ const Search = () => {
         <Suggestions
           className="autocomplete-container"
           handleInputValue={handleInputValue}
-          suggestions={autocompleteSuggestions}
+          suggestions={suggestions}
           inputValue={inputValue}
         ></Suggestions>
       )}

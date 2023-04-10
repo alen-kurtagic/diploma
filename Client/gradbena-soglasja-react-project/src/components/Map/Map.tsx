@@ -1,4 +1,4 @@
-import { useRef, useContext, forwardRef, useState, useEffect } from "react";
+import { useRef, useContext, useState } from "react";
 import {
   Map as ReactMap,
   GeolocateControl,
@@ -7,7 +7,7 @@ import {
   Layer,
   ViewStateChangeEvent,
 } from "react-map-gl";
-import maplibregl, { GeoJSONFeature } from "maplibre-gl";
+import maplibregl from "maplibre-gl";
 import { AppContext } from "../../App";
 import proj4 from "../../utils/projectionDefinitions";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -33,52 +33,54 @@ const Map = () => {
   // moving the map.
   const handleMoveEnd = () => {
     if (!appContext.reactMapRef.current) return;
+
+    // Get current map view state bounds
     const bounds = appContext.reactMapRef.current.getBounds();
-    const point1 = proj4("EPSG:3857", "EPSG:3794", [
+
+    // Project the southwest and northeast points of the bounds from EPSG:3857 to EPSG:3794
+    const swPoint = proj4("EPSG:3857", "EPSG:3794", [
       bounds._sw.lng,
       bounds._sw.lat,
     ]);
-    const point2 = proj4("EPSG:3857", "EPSG:3794", [
+    const nePoint = proj4("EPSG:3857", "EPSG:3794", [
       bounds._ne.lng,
       bounds._ne.lat,
     ]);
-    const bbox = [point1[0], point1[1], point2[0], point2[1]];
-    const url = `https://king2.geosx.io/king/gurs/_sx1/sxtables/sxid_gurs_d96_zk_zkn/data/.json?&bbox=${bbox.join(
+    const bbox = [...swPoint, ...nePoint];
+    const url = `https://king2.geosx.io/king/gurs/_sx1/sxtables/sxid_gurs_d96_zk_zkn/data/.json?select=GSX_ID,geometry&bbox=${bbox.join(
       ","
     )}`;
     fetch(url)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`API request failed with status ${res.status}`);
+        }
+        return res.json();
+      })
       .then((json) => {
+        // Transform the coordinates from EPSG:3794 to EPSG:3857
         const transformedFeatures = json.features.map((feature: any) => {
-          const transformedCoordinates = [];
-
-          for (let i = 0; i < feature.geometry.coordinates.length; i++) {
-            const outerArray = feature.geometry.coordinates[i];
-            const transformedOuterArray = [];
-
-            for (let j = 0; j < outerArray.length; j++) {
-              const innerArray = outerArray[j];
-              const transformedInnerArray = proj4(
-                "EPSG:3794",
-                "EPSG:3857",
-                innerArray
-              );
-              transformedOuterArray.push(transformedInnerArray);
-            }
-            transformedCoordinates.push(transformedOuterArray);
-          }
+          const transformedCoordinates = feature.geometry.coordinates.map(
+            (outerArray: Array<Array<number>>) =>
+              outerArray.map((innerArray: Array<number>) =>
+                proj4("EPSG:3794", "EPSG:3857", innerArray)
+              )
+          );
 
           return {
-            type: feature.type,
-            id: feature.id,
+            ...feature,
             geometry: {
-              type: feature.geometry.type,
+              ...feature.geometry,
               coordinates: transformedCoordinates,
             },
           };
         });
+
         json.features = transformedFeatures;
         setData(json);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
       });
   };
 
@@ -123,11 +125,11 @@ const Map = () => {
         onClick={handleFeatureClick}
         boxZoom={false}
       >
-        <Source type="geojson" data={data}>
+        <Source type="geojson" data={data} tolerance={0}>
           <Layer
             id="properties-line"
             type="line"
-            minzoom={14}
+            minzoom={16}
             paint={{
               "line-color": "rgba(180, 180, 180, 0.2)",
               "line-width": 3,

@@ -11,8 +11,17 @@
     border-radius: 12.5px
     border: none
 
-.secondaryColor
-    background-color: $secondaryColor
 .confirm img
     height: 30px
     width: 30px
+
+.confirm:hover,
+.confirm:focus
+    background-color: lighten($darkgray, 5%)
+
+.secondaryColor
+    background-color: $secondaryColor
+
+.secondaryColor:hover,
+.secondaryColor:focus
+    background-color: lighten($secondaryColor, 5%)

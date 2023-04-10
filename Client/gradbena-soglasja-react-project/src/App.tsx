@@ -38,9 +38,9 @@ function App() {
   // Partial is a utility type that makes all properties of a given type
   //  optional and not neccesseraly required.
   const [viewState, setViewState] = useState<Partial<ViewState>>({
-    latitude: 46.1492,
+    latitude: 46.1491664,
     longitude: 14.9860106,
-    zoom: 17,
+    zoom: 7,
   });
 
   // Function that globally handles "keydown" events.
@@ -55,7 +55,6 @@ function App() {
 
   // Function that globally handles "keyup" events.
   const handleKeyUp = (event: KeyboardEvent) => {
-    console.log(event.key);
     if (event.key == "Shift") {
       shiftPressed.current = false;
     }

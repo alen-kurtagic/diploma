@@ -15,30 +15,51 @@ const Suggestion: React.FC<SuggestionProps> = ({
 }) => {
   const appContext = useContext(AppContext);
 
+  const locationName = inputValue.split(",")[0].trim();
+
+  // Returns the first index at which a given element can be found in the
+  // array, or -1 if it is not present.
+  const matchIndex = (
+    suggestionValues.locationName || suggestionValues.cityName
+  )
+    .toLowerCase()
+    .indexOf(locationName.toLowerCase());
+
+  // Cancel the suggestion if it is not a perfect match with input,
+  // even if the API suggests it.
+  if (matchIndex < 0) return <></>;
+
+  const fullNameComma: string = [
+    suggestionValues.locationName,
+    suggestionValues.cityName,
+  ].join(", ");
+
   const handleItemClick = (event: React.PointerEvent<HTMLLIElement>) => {
     event.preventDefault();
-    handleInputValue(suggestionValues.ac_text);
+    handleInputValue(fullNameComma);
     appContext.goToLocation({ location: suggestionValues });
     appContext.inputRef.current?.blur();
   };
 
-  const boldMatch = () => {
-    const matchIndex = suggestionValues.ac_text
-      .toLowerCase()
-      .indexOf(inputValue.toLowerCase());
-    const prefix = suggestionValues.ac_text.slice(0, matchIndex);
-    const match = suggestionValues.ac_text.slice(
-      matchIndex,
-      matchIndex + inputValue.length
-    );
-    const suffix = suggestionValues.ac_text.slice(
-      matchIndex + inputValue.length
-    );
+  const getBoldMatch = () => {
+    // if (matchIndex < 0) return;
+    const prefix = (
+      suggestionValues.locationName || suggestionValues.cityName
+    ).slice(0, matchIndex);
+    const match = (
+      suggestionValues.locationName || suggestionValues.cityName
+    ).slice(matchIndex, matchIndex + locationName.length);
+    const suffix = (
+      suggestionValues.locationName || suggestionValues.cityName
+    ).slice(matchIndex + locationName.length);
     return (
       <span>
         {prefix}
         <b>{match}</b>
         {suffix}
+        <span className="cityName">
+          {suggestionValues.locationName ? suggestionValues.cityName : null}
+        </span>
       </span>
     );
   };
@@ -46,7 +67,7 @@ const Suggestion: React.FC<SuggestionProps> = ({
   return (
     <li onPointerDown={handleItemClick}>
       <img src="./src/assets/location.svg"></img>
-      {boldMatch()}
+      {getBoldMatch()}
     </li>
   );
 };
