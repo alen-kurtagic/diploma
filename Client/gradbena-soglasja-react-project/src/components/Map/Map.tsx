@@ -12,8 +12,7 @@ import { AppContext } from "../../App";
 import proj4 from "../../utils/projectionDefinitions";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-// React functional component that uses "forwardRef" to pass reference to
-// child. Accepts "props" object and "ref" reference to "MapRef" type.
+// React functional component of the Mp
 const Map = () => {
   const appContext = useContext(AppContext);
   const geolocateRef = useRef<GeolocateControlRef>(null);
@@ -37,19 +36,13 @@ const Map = () => {
     // Get current map view state bounds
     const bounds = appContext.reactMapRef.current.getBounds();
 
-    // Project the southwest and northeast points of the bounds from EPSG:3857 to EPSG:3794
-    const swPoint = proj4("EPSG:3857", "EPSG:3794", [
+    const bbox = [
       bounds._sw.lng,
       bounds._sw.lat,
-    ]);
-    const nePoint = proj4("EPSG:3857", "EPSG:3794", [
       bounds._ne.lng,
       bounds._ne.lat,
-    ]);
-    const bbox = [...swPoint, ...nePoint];
-    const url = `https://king2.geosx.io/king/gurs/_sx1/sxtables/sxid_gurs_d96_zk_zkn/data/.json?select=GSX_ID,geometry&bbox=${bbox.join(
-      ","
-    )}`;
+    ];
+    const url = `http://localhost:3000/layers/parcels?bbox=${bbox.join(",")}`;
     fetch(url)
       .then((res) => {
         if (!res.ok) {
@@ -60,19 +53,20 @@ const Map = () => {
       .then((json) => {
         // Transform the coordinates from EPSG:3794 to EPSG:3857
         const transformedFeatures = json.features.map((feature: any) => {
-          const transformedCoordinates = feature.geometry.coordinates.map(
-            (outerArray: Array<Array<number>>) =>
-              outerArray.map((innerArray: Array<number>) =>
-                proj4("EPSG:3794", "EPSG:3857", innerArray)
-              )
-          );
+          // const transformedCoordinates = feature.geometry.coordinates.map(
+          //   (outerArray: Array<Array<number>>) =>
+          //     outerArray.map((innerArray: Array<number>) =>
+          //       proj4("EPSG:3794", "EPSG:3857", innerArray)
+          //     )
+          // );
 
           return {
+            id: feature.properties.gid,
             ...feature,
-            geometry: {
-              ...feature.geometry,
-              coordinates: transformedCoordinates,
-            },
+            // geometry: {
+            //   ...feature.geometry,
+            //   coordinates: transformedCoordinates,
+            // },
           };
         });
 
@@ -129,11 +123,10 @@ const Map = () => {
           <Layer
             id="properties-line"
             type="line"
-            minzoom={16}
+            minzoom={14}
             paint={{
               "line-color": "rgba(180, 180, 180, 0.2)",
               "line-width": 3,
-              //"fill-outline-color": "rgba(180, 180, 180, 0.5)",
             }}
           />
           <Layer

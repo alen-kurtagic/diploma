@@ -27,7 +27,7 @@ const Suggestion: React.FC<SuggestionProps> = ({
 
   // Cancel the suggestion if it is not a perfect match with input,
   // even if the API suggests it.
-  if (matchIndex < 0) return <></>;
+  //if (matchIndex < 0) return <></>;
 
   const fullNameComma: string = [
     suggestionValues.locationName,
@@ -41,8 +41,19 @@ const Suggestion: React.FC<SuggestionProps> = ({
     appContext.inputRef.current?.blur();
   };
 
+  const startsWithNumber = (str: string): boolean => {
+    return /^\d/.test(str);
+  };
+  const getIcon = () => {
+    return startsWithNumber(inputValue) ? (
+      <img src="./src/assets/home.svg" className="icon-home"></img>
+    ) : (
+      <img src="./src/assets/location.svg" className="icon-location"></img>
+    );
+  };
+
   const getBoldMatch = () => {
-    // if (matchIndex < 0) return;
+    if (matchIndex < 0) return;
     const prefix = (
       suggestionValues.locationName || suggestionValues.cityName
     ).slice(0, matchIndex);
@@ -66,7 +77,7 @@ const Suggestion: React.FC<SuggestionProps> = ({
 
   return (
     <li onPointerDown={handleItemClick}>
-      <img src="./src/assets/location.svg"></img>
+      {getIcon()}
       {getBoldMatch()}
     </li>
   );

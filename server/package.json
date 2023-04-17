@@ -1,0 +1,30 @@
+{
+  "name": "gradbena-soglasja-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./build/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "wbuild": "rollup -c -w --bundleConfigAsCjs",
+    "build": "rollup -c  --bundleConfigAsCjs"
+  },
+  "dependencies": {
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.17",
+    "@types/geojson": "^7946.0.10",
+    "@types/node": "^18.15.11",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "geojson": "^0.5.0",
+    "pg": "^8.10.0",
+    "tslib": "^2.5.0",
+    "typescript": "^5.0.4"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "@types/pg": "^8.6.6",
+    "rollup-plugin-dotenv": "^0.4.1"
+  }
+}

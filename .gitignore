@@ -1,0 +1,29 @@
+# Build artifacts
+**/build/
+**/dist/
+**/*.exe
+**/*.o
+**/*.log
+
+# Dependency directories
+**/node_modules/
+**/venv/
+**/lib/
+
+# Configuration files with sensitive information
+**/.env
+**/config.json
+
+# Temporary files and directories
+**/temp/
+**/*.tmp
+**/*.bak
+
+# Operating system files
+**/.DS_Store
+**/Thumbs.db
+
+# IDE-specific files
+**/.idea/
+**/.vscode/
+**/*.code-workspace
