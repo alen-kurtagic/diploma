@@ -1,24 +1,21 @@
 import React from "react";
-import Suggestion from "./Suggestion";
+import Suggestion from "../Suggestion/Suggestion";
 import { APISuggestion } from "src/types/types";
+import "./suggestions.sass";
 
 type SuggestionsProps = {
   suggestions: APISuggestion[];
   handleInputValue: (value: string) => void;
-  className: string;
   inputValue: string;
 };
 
 const Suggestions: React.FC<SuggestionsProps> = ({
   suggestions,
-  className,
   handleInputValue,
   inputValue,
 }) => {
-  console.log("test");
-
   return (
-    <ul className={className}>
+    <ul className="suggestions-container">
       {suggestions.map((suggestionValues: APISuggestion) => (
         <Suggestion
           key={suggestionValues.ac_text}

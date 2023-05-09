@@ -12,7 +12,7 @@ const Confirm = () => {
   // Navigate to DetailsPage when button is clicked and feature selected
   const handleClick = () => {
     const ids = appContext.selectedFeatures.map((feature) => feature.id);
-    if (selected) navigate(`/tract?tract=${ids.join(",")}`);
+    if (selected) navigate(`/tract?ids=${ids.join(",")}`);
   };
 
   return (

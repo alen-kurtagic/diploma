@@ -6,8 +6,10 @@ import "./surface-area.sass";
 const SurfaceArea = () => {
   const appContext = useContext(TractPageContext);
 
+  if (!appContext.fetchedData) return;
+
   const calculatedArea: number = calculateTotalSurfaceArea(
-    appContext.fetchedData?.geoJson!
+    appContext.fetchedData.tract?.geoJson
   );
 
   function formatArea(areaInSquareMeters: number) {

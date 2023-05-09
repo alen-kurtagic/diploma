@@ -2,7 +2,7 @@ import { Router } from "express";
 import { getTract } from "../controllers/tractController";
 import { Request, Response } from "express";
 import { FeatureCollection, GeoJsonProperties } from "geojson";
-import { getSettlements } from "../controllers/codebookController";
+import { getSettlementNames } from "../controllers/codebookController";
 
 const router = Router();
 
@@ -20,14 +20,16 @@ router.get("/tract", async (req: Request, res: Response) => {
     const codes = tractFeatures.features.map(
       (feature) => feature.properties?.ko_id
     );
-    const settlement: Array<string> = await getSettlements(codes);
+    const settlementNames: Array<string> = await getSettlementNames(codes);
 
-    let tract: object = {
-      settlement: settlement,
-      geoJson: tractFeatures,
+    let json: object = {
+      tract: {
+        geoJson: tractFeatures,
+        settlementNames: settlementNames,
+      },
     };
 
-    res.json(tract);
+    res.json(json);
   } catch (error) {
     if (error instanceof TypeError) {
       res.status(400).send(error.message);

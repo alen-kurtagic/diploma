@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { AppContext } from "src/pages/Home/HomePage";
 import { APISuggestion } from "src/types/types";
-import "./suggestions.sass";
+import "./suggestion.sass";
 
 type SuggestionProps = {
   suggestionValues: APISuggestion;
@@ -64,6 +64,7 @@ const Suggestion: React.FC<SuggestionProps> = ({
     const suffix = (
       suggestionValues.locationName || suggestionValues.cityName
     ).slice(matchIndex + locationName.length);
+
     return (
       <span>
         {prefix}
@@ -77,7 +78,7 @@ const Suggestion: React.FC<SuggestionProps> = ({
   };
 
   return (
-    <li onPointerDown={handleItemClick}>
+    <li className="suggestion-container" onPointerDown={handleItemClick}>
       {getIcon()}
       {getBoldMatch()}
     </li>

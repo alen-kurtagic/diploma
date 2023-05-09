@@ -1,25 +1,31 @@
-import Search from "../../../Home/components/Search/Search";
 import { TractPageContext } from "src/pages/Tract/TractPage";
-import "./header.sass";
-import { useContext } from "react";
 import SurfaceArea from "../SurfaceArea/SurfaceArea";
+import { useContext } from "react";
+import "./header.sass";
+import {
+  capitalizeFirstLetter,
+  replaceLastCommaWithAnd,
+} from "src/utils/stringManipulation";
 
 const Header = () => {
   const appContext = useContext(TractPageContext);
 
-  function capitalizeFirstLetter(str: string): string {
-    const lowercase: string = str.toLowerCase();
-    return lowercase.charAt(0).toUpperCase() + lowercase.slice(1);
-  }
+  const settlementNames = appContext.fetchedData!.tract.settlementNames!;
+  const settlementNamesCapitalized = settlementNames.map((settlementName) =>
+    capitalizeFirstLetter(settlementName)
+  );
+  const settlementNamesAnd = replaceLastCommaWithAnd(
+    settlementNamesCapitalized.join(", ")
+  );
 
-  const title: string =
-    appContext.fetchedData?.settlement.join(", ") || "Neznano";
-  const subtitle: string = "-".toString();
+  const title: string = settlementNamesAnd;
+
+  const subtitle: string = "x".toString();
 
   return (
     <div className="header">
       <span className="titles">
-        <h2>{capitalizeFirstLetter(title)}</h2>
+        <h2>{title}</h2>
         <p>Gradnja na tem zemljišču zahteva {subtitle} soglasij</p>
       </span>
       {/* <SurfaceArea></SurfaceArea> */}

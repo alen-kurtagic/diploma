@@ -1,5 +1,5 @@
 import React from "react";
-import "./taskbar.sass";
+import "./taskbar-element.sass";
 
 interface TaskbarElementProps {
   color: string;

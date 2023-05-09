@@ -1,6 +1,6 @@
 import React from "react";
+import TaskbarElement from "../TaskbarElement/TaskbarElement";
 import "./taskbar.sass";
-import TaskbarElement from "./TaskbarElement";
 
 const Taskbar = () => {
   return (

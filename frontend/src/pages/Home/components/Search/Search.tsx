@@ -61,7 +61,7 @@ const Search = () => {
   };
 
   return (
-    <div className="search-autocomplete-container">
+    <div className="search-suggestions-container">
       <div className="search-container">
         <input
           ref={appContext.inputRef}
@@ -83,7 +83,6 @@ const Search = () => {
       </div>
       {isFocused && (
         <Suggestions
-          className="autocomplete-container"
           handleInputValue={handleInputValue}
           suggestions={suggestions}
           inputValue={inputValue}

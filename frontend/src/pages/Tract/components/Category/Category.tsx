@@ -1,5 +1,5 @@
-import React from "react";
 import "./category.sass";
+import Approver from "../Approver/Approver";
 
 interface CategoryProps {
   title: string;
@@ -10,7 +10,7 @@ interface CategoryProps {
 
 const Category = ({ title, subtitle, imgSrc, color }: CategoryProps) => {
   return (
-    <>
+    <div className="category-container">
       <div className="category-header" style={{ backgroundColor: color }}>
         <img src={imgSrc}></img>
         <div className="titles">
@@ -18,7 +18,10 @@ const Category = ({ title, subtitle, imgSrc, color }: CategoryProps) => {
           <p className="subtitle">{subtitle}</p>
         </div>
       </div>
-    </>
+      <div className="category-content">
+        <Approver></Approver>
+      </div>
+    </div>
   );
 };
 

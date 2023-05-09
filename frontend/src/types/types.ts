@@ -23,6 +23,17 @@ interface APISuggestion {
   y2: number;
 }
 
+type APIParcel = GeoJSONFeature;
+
+type APIParcels = GeoJSON.FeatureCollection;
+
+interface APITract {
+  tract: {
+    geoJson: APIParcels;
+    settlementNames: Array<string>;
+  };
+}
+
 interface HomePageState {
   viewState: any;
   handleViewState: (newViewState: Partial<ViewState>) => void;
@@ -41,7 +52,7 @@ interface TractPageState {
   viewState: any;
   handleViewState: (newViewState: Partial<ViewState>) => void;
   reactMapRef: any;
-  tractIds: Array<number> | undefined;
+  ids: Array<number> | undefined;
   fetchedData: TractFetchData | undefined;
   setFetchedData: (data: TractFetchData) => void;
   loading: boolean;
@@ -49,13 +60,18 @@ interface TractPageState {
 }
 
 interface TractFetchData {
-  geoJson: GeoJSON.FeatureCollection | undefined;
-  settlement: Array<string>;
+  tract: {
+    geoJson: GeoJSON.FeatureCollection;
+    settlementNames: Array<string>;
+  };
 }
 
 export type {
   goToParams,
   APISuggestion,
+  APIParcel,
+  APIParcels,
+  APITract,
   HomePageState,
   TractPageState,
   TractFetchData,

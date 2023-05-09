@@ -15,7 +15,7 @@ export const TractPageContext = createContext<TractPageState>({
   viewState: {},
   handleViewState: (newViewState: Partial<ViewState>) => {},
   reactMapRef: null,
-  tractIds: undefined,
+  ids: undefined,
   fetchedData: undefined,
   setFetchedData: (data: TractFetchData) => {},
   loading: true,
@@ -26,17 +26,17 @@ function TractPage() {
   // Get "tract" parameter and pass it down to the TractMap
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const tractParam = params.get("tract");
-  const tractIds: Array<number> | undefined = tractParam
-    ?.split(",")
-    .map(Number);
+  const idsParam = params.get("ids");
+  const ids: Array<number> | undefined = idsParam?.split(",").map(Number);
 
   const [fetchedData, setFetchedData] = useState<TractFetchData>({
-    geoJson: {
-      type: "FeatureCollection",
-      features: [],
+    tract: {
+      geoJson: {
+        type: "FeatureCollection",
+        features: [],
+      },
+      settlementNames: [],
     },
-    settlement: [],
   });
 
   const [loading, setLoading] = useState(true);
@@ -59,7 +59,7 @@ function TractPage() {
         viewState,
         handleViewState,
         reactMapRef,
-        tractIds,
+        ids,
         fetchedData,
         setFetchedData,
         loading,

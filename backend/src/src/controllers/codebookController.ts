@@ -1,6 +1,8 @@
 import { getByIds } from "../database/models/Settlement";
 
-const getSettlements = async (ids: Array<number>): Promise<Array<string>> => {
+const getSettlementNames = async (
+  ids: Array<number>
+): Promise<Array<string>> => {
   try {
     const settlement: Array<string> = await getByIds(ids);
 
@@ -36,4 +38,4 @@ const createUniqueSortedArray = (strings: string[]): string[] => {
   return result;
 };
 
-export { getSettlements };
+export { getSettlementNames };

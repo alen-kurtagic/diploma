@@ -12,6 +12,7 @@ import bbox from "@turf/bbox";
 import "./tract-map.sass";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { BBox } from "@turf/turf";
+import { getTract } from "src/services/tract";
 
 // React functional component of the Mp
 const TractMap = () => {
@@ -25,7 +26,7 @@ const TractMap = () => {
 
     const bounds: BBox = bbox({
       type: "FeatureCollection",
-      features: appContext.fetchedData?.geoJson?.features,
+      features: appContext.fetchedData?.tract.geoJson?.features,
     });
 
     event.target.fitBounds(bounds as [number, number, number, number], {
@@ -62,34 +63,9 @@ const TractMap = () => {
   };
 
   useEffect(() => {
-    const url = `http://localhost:3000/tract?ids=${appContext.tractIds?.join(
-      ","
-    )}`;
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`API request failed with status ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((json) => {
-        // Transform the coordinates
-        const transformedFeatures = json.geoJson.features.map(
-          (feature: any) => {
-            return {
-              id: feature.properties.gid,
-              ...feature,
-            };
-          }
-        );
-
-        json.geoJson.features = transformedFeatures;
-        appContext.setFetchedData(json);
-        console.log(json);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    getTract(appContext.ids!).then((tract) => {
+      appContext.setFetchedData(tract);
+    });
   }, []);
 
   const interactiveLayerIds = ["properties-fill"];
@@ -110,7 +86,7 @@ const TractMap = () => {
       >
         <Source
           type="geojson"
-          data={appContext.fetchedData?.geoJson}
+          data={appContext.fetchedData?.tract.geoJson}
           tolerance={0}
         >
           <Layer
@@ -121,7 +97,7 @@ const TractMap = () => {
               "fill-extrusion-height": 3,
               "fill-extrusion-base": 0,
             }}
-            filter={["any", ["in", ["id"], ["literal", appContext.tractIds]]]}
+            filter={["any", ["in", ["id"], ["literal", appContext.ids]]]}
             //beforeId="properties"
           />
         </Source>
