@@ -1,0 +1,46 @@
+@import "src/variables.sass"
+
+.autocomplete-container
+    position: relative
+    top: 5px
+    list-style-type: none
+    width: 100%
+    background-color: $primaryColor
+    border-radius: 15px
+    padding: 0
+    max-height: 40px * 5
+    overflow-y: scroll
+    scrollbar-width: thin
+
+.autocomplete-container li
+    position: relative
+    height: 40px
+    display: flex
+    align-items: center
+    font-size: 1.05rem
+    padding-left: 60px
+
+.autocomplete-container b
+    font-weight: 500
+
+.autocomplete-container li img
+    position: absolute
+    left: 15px
+
+.icon-location
+    height: 30px
+    width: 30px
+
+.icon-home
+    height: 27px
+    width: 27px
+
+.autocomplete-container li:hover
+    background-color: $lightgray
+    cursor: pointer
+
+.cityName
+    color: $secondaryFontColor
+    font-size: $secondaryFontSize
+    margin-left: 7.5px
+

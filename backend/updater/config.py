@@ -34,7 +34,7 @@ DB_CONNECTION_PARAMS = {
     'user': os.environ.get("USER"),
     'password': os.environ.get("PASSWORD"),
     'host': os.environ.get("HOST"),
-    'port': os.environ.get("PORT")
+    'port': os.environ.get("PGSQL_PORT")
 }
 
 

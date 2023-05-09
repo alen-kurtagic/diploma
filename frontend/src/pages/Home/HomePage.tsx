@@ -1,16 +1,17 @@
 import { useState, createContext, useRef, useCallback, useEffect } from "react";
 import { MapRef, ViewState } from "react-map-gl";
 import proj4 from "src/utils/projectionDefinitions";
-import Map from "src/components/Map/Map";
-import Header from "src/components/Header/Header";
-import Confirm from "src/components/Confirm/Confirm";
-import { APISuggestion, AppState, goToParams } from "src/types/types";
+import Map from "./components/Map/Map";
+import Confirm from "./components/Confirm/Confirm";
+import Loading from "src/components/Loading/Loading";
+import { APISuggestion, HomePageState, goToParams } from "src/types/types";
+import Search from "./components/Search/Search";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./HomePage.sass";
+import "./home-page.sass";
 
 // Context object that will be used to share the state used
 // in children of this Component.
-export const AppContext = createContext<AppState>({
+export const AppContext = createContext<HomePageState>({
   viewState: {},
   handleViewState: (newViewState: Partial<ViewState>) => {},
   goToLocation: ({ location }: { location: APISuggestion }) => {},
@@ -19,11 +20,15 @@ export const AppContext = createContext<AppState>({
   selectedFeatures: [],
   setSelectedFeatures: () => {},
   shiftPressed: { current: null },
+  loading: true,
+  setLoading: () => {},
 });
 
 function HomePage() {
   // Create a reference to Maplibre map instance using useRef hook.
   const reactMapRef = useRef<MapRef>(null);
+
+  const [loading, setLoading] = useState(true);
 
   // Create a reference to Search component input element, to track user input
   // for suggestions related components.
@@ -119,11 +124,16 @@ function HomePage() {
         selectedFeatures,
         setSelectedFeatures,
         shiftPressed,
+        loading,
+        setLoading,
       }}
     >
-      <Header></Header>
-      <Map></Map>
-      <Confirm></Confirm>
+      <div className="home-page">
+        {loading && <Loading />}
+        <Search></Search>
+        <Map></Map>
+        <Confirm></Confirm>
+      </div>
     </AppContext.Provider>
   );
 }

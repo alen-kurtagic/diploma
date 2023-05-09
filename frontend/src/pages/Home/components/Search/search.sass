@@ -1,0 +1,48 @@
+@import "src/variables.sass"
+
+.search-autocomplete-container
+    position: relative
+    z-index: 1
+    display: flex
+    flex-direction: column
+    width: 100%
+    margin: 15px 15px 15px 15px
+
+
+.search-container
+    display: flex
+    align-items: center
+
+.search-container input
+    width: 100%
+    height: 50px
+    border-radius: 50px
+    border: none
+    background-color: $primaryColor
+    padding-left: 60px
+    font-size: $primaryFontSize
+    // box-shadow: 5.7px 5.9px 7.2px -4px rgba(0, 0, 0, 0.22), 15.7px 16.3px 20px -4px rgba(0, 0, 0, 0.039), 37.7px 39.2px 48.2px -4px rgba(0, 0, 0, 0.051), 125px 130px 160px -4px rgba(0, 0, 0, 0.07)
+
+
+.search-container input::placeholder
+    color: $darkgray
+
+.search-container img
+    height: 32px
+    width: 32px
+    position: absolute
+
+.search-container .search-icon
+    left: 15px
+
+.search-container .clear-input
+    right: 15px
+    cursor: pointer
+
+@media screen and ( min-width: 480px  )
+    .search-autocomplete-container
+        width: 40%
+        min-width: 450px
+        max-width: 525px
+    .search-container input
+        height: 50px

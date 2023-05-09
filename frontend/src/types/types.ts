@@ -1,5 +1,6 @@
 // An interface that defines the expected properties of the parameters for the
 
+import { GeoJSONFeature } from "maplibre-gl";
 import { Dispatch, RefObject, SetStateAction } from "react";
 import { ViewState } from "react-map-gl";
 
@@ -22,7 +23,7 @@ interface APISuggestion {
   y2: number;
 }
 
-interface AppState {
+interface HomePageState {
   viewState: any;
   handleViewState: (newViewState: Partial<ViewState>) => void;
   goToLocation: ({ location }: { location: APISuggestion }) => void;
@@ -32,6 +33,30 @@ interface AppState {
   selectedFeatures: Array<any>;
   setSelectedFeatures: Dispatch<SetStateAction<any>>;
   shiftPressed: RefObject<boolean>;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
-export type { goToParams, APISuggestion, AppState };
+interface TractPageState {
+  viewState: any;
+  handleViewState: (newViewState: Partial<ViewState>) => void;
+  reactMapRef: any;
+  tractIds: Array<number> | undefined;
+  fetchedData: TractFetchData | undefined;
+  setFetchedData: (data: TractFetchData) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+}
+
+interface TractFetchData {
+  geoJson: GeoJSON.FeatureCollection | undefined;
+  settlement: Array<string>;
+}
+
+export type {
+  goToParams,
+  APISuggestion,
+  HomePageState,
+  TractPageState,
+  TractFetchData,
+};
