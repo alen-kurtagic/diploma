@@ -27,13 +27,6 @@ type APIParcel = GeoJSONFeature;
 
 type APIParcels = GeoJSON.FeatureCollection;
 
-interface APITract {
-  tract: {
-    geoJson: APIParcels;
-    settlementNames: Array<string>;
-  };
-}
-
 interface HomePageState {
   viewState: any;
   handleViewState: (newViewState: Partial<ViewState>) => void;
@@ -57,11 +50,16 @@ interface TractPageState {
   setFetchedData: (data: TractFetchData) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
+  layers: {
+    culture: boolean;
+  };
+  setLayers: (newLayers: any) => void;
 }
 
 interface TractFetchData {
   tract: {
     geoJson: GeoJSON.FeatureCollection;
+    culture: GeoJSON.FeatureCollection;
     settlementNames: Array<string>;
   };
 }
@@ -71,7 +69,6 @@ export type {
   APISuggestion,
   APIParcel,
   APIParcels,
-  APITract,
   HomePageState,
   TractPageState,
   TractFetchData,

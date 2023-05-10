@@ -1,8 +1,10 @@
 import { Router } from "express";
 import { getTract } from "../controllers/tractController";
 import { Request, Response } from "express";
-import { FeatureCollection, GeoJsonProperties } from "geojson";
+import { BBox, FeatureCollection, GeoJsonProperties } from "geojson";
 import { getSettlementNames } from "../controllers/codebookController";
+import { getCulture } from "src/kingProstor/apiServices";
+import bbox from "@turf/bbox";
 
 const router = Router();
 
@@ -22,9 +24,13 @@ router.get("/tract", async (req: Request, res: Response) => {
     );
     const settlementNames: Array<string> = await getSettlementNames(codes);
 
+    const tractBounds: BBox = bbox(tractFeatures) as BBox;
+
+    const culture = await getCulture(tractBounds);
     let json: object = {
       tract: {
         geoJson: tractFeatures,
+        culture: culture,
         settlementNames: settlementNames,
       },
     };

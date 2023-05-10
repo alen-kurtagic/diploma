@@ -8,8 +8,8 @@ import { useLocation } from "react-router-dom";
 import Header from "./components/Header/Header";
 import Taskbar from "./components/Taskbar/Taskbar";
 import Categories from "./components/Categories/Categories";
-import "./tract-page.sass";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./tract-page.sass";
 
 export const TractPageContext = createContext<TractPageState>({
   viewState: {},
@@ -20,6 +20,10 @@ export const TractPageContext = createContext<TractPageState>({
   setFetchedData: (data: TractFetchData) => {},
   loading: true,
   setLoading: () => {},
+  layers: {
+    culture: true,
+  },
+  setLayers: () => {},
 });
 
 function TractPage() {
@@ -35,11 +39,17 @@ function TractPage() {
         type: "FeatureCollection",
         features: [],
       },
+      culture: {
+        type: "FeatureCollection",
+        features: [],
+      },
       settlementNames: [],
     },
   });
 
   const [loading, setLoading] = useState(true);
+
+  const [layers, setLayers] = useState({ culture: true });
 
   const [viewState, setViewState] = useState<Partial<ViewState>>({
     latitude: 46.1491664,
@@ -64,6 +74,8 @@ function TractPage() {
         setFetchedData,
         loading,
         setLoading,
+        layers,
+        setLayers,
       }}
     >
       <div className="tract-page">

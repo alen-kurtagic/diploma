@@ -1,6 +1,6 @@
+import { pool } from "../connection";
 import { Feature, FeatureCollection, GeoJsonProperties } from "geojson";
 import { QueryResult, QueryResultRow } from "pg";
-import { pool } from "../../config/db";
 
 const tableName = "kn_slo_parcele_slo_20230423";
 

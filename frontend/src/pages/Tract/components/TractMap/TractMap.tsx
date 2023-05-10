@@ -70,6 +70,8 @@ const TractMap = () => {
 
   const interactiveLayerIds = ["properties-fill"];
 
+  console.log(appContext.fetchedData?.tract.geoJson);
+
   return (
     <div className="tract-map">
       <ReactMap
@@ -98,6 +100,24 @@ const TractMap = () => {
               "fill-extrusion-base": 0,
             }}
             filter={["any", ["in", ["id"], ["literal", appContext.ids]]]}
+            //beforeId="properties"
+          />
+        </Source>
+
+        <Source
+          type="geojson"
+          data={appContext.fetchedData?.tract.culture}
+          tolerance={0}
+        >
+          <Layer
+            id="culture"
+            type="fill-extrusion"
+            paint={{
+              "fill-extrusion-color": "#ADD8E6",
+              "fill-extrusion-height": 1,
+              "fill-extrusion-base": 0,
+              "fill-extrusion-opacity": appContext.layers.culture ? 1 : 0,
+            }}
             //beforeId="properties"
           />
         </Source>

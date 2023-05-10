@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { getParcels } from "../controllers/layersController";
 import { FeatureCollection, GeoJsonProperties } from "geojson";
-import { formatBbox } from "../utils/geoUtils";
+import { formatBbox } from "../utils/bbox";
 
 const router = Router();
 

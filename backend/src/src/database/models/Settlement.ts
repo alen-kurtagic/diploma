@@ -1,5 +1,5 @@
 import { QueryResult, QueryResultRow } from "pg";
-import { pool } from "../../config/db";
+import { pool } from "../connection";
 
 const tableName = "settlement";
 

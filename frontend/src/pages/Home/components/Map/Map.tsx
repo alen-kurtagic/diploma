@@ -28,11 +28,6 @@ const Map = () => {
     appContext.setLoading(false);
   };
 
-  const [water, setWater] = useState<GeoJSON.FeatureCollection>({
-    type: "FeatureCollection",
-    features: [],
-  });
-
   const transformPolygonCoordinates = (
     polygon: any,
     sourceProj: string,
@@ -71,44 +66,6 @@ const Map = () => {
     const parcels = await getParcels(bbox);
 
     setParcels(parcels);
-
-    // water
-    const point1 = [bounds._sw.lng, bounds._sw.lat];
-    const point2 = [bounds._ne.lng, bounds._ne.lat];
-
-    const transformedPoint1 = proj4("EPSG:3857", "EPSG:3794", point1);
-    const transformedPoint2 = proj4("EPSG:3857", "EPSG:3794", point2);
-
-    const bbox2 = [
-      transformedPoint1[0],
-      transformedPoint1[1],
-      transformedPoint2[0],
-      transformedPoint2[1],
-    ];
-    const url = `https://king2.geosx.io/gurs/_sx1/sxtables/sxid_gurs_d96_gji_vp_elek/data/.json?bbox=${bbox2.join(
-      ","
-    )}`;
-    const response: Response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
-    const features = data.features.map((feature: any) => {
-      feature.geometry = transformPolygonCoordinates(
-        feature.geometry,
-        "EPSG:3794",
-        "EPSG:3857"
-      );
-      return {
-        ...feature,
-        id: feature.properties.gid,
-      };
-    });
-
-    data.features = features;
-
-    setWater(data);
   };
 
   // Function that updates the map once the user has moved.
@@ -153,17 +110,6 @@ const Map = () => {
           onClick={handleFeatureClick}
           boxZoom={false}
         >
-          <Source type="geojson" data={water} tolerance={0}>
-            <Layer
-              id="water-line"
-              type="line"
-              minzoom={14}
-              paint={{
-                "line-color": "rgba(1, 0, 0, 1)",
-                "line-width": 6,
-              }}
-            />
-          </Source>
           <Source type="geojson" data={parcels} tolerance={0}>
             <Layer
               id="properties-line"
