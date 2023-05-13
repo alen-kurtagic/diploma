@@ -21,6 +21,10 @@
       "src/*": ["src/*"]
     }
   },
-  "include": ["src", "src/services/suggestions.tsocomplete.tsgestions.ts"],
+  "include": [
+    "src",
+    "src/services/suggestions.tsocomplete.tsgestions.ts",
+    "src/utils/.ts"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

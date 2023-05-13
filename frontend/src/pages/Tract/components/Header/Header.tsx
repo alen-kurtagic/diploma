@@ -1,16 +1,16 @@
 import { TractPageContext } from "src/pages/Tract/TractPage";
-import SurfaceArea from "../SurfaceArea/SurfaceArea";
+// import SurfaceArea from "../SurfaceArea/SurfaceArea";
 import { useContext } from "react";
-import "./header.sass";
 import {
   capitalizeFirstLetter,
   replaceLastCommaWithAnd,
 } from "src/utils/stringManipulation";
+import "./header.sass";
 
 const Header = () => {
-  const appContext = useContext(TractPageContext);
+  const tractContext = useContext(TractPageContext);
 
-  const settlementNames = appContext.fetchedData!.tract.settlementNames!;
+  const settlementNames = tractContext.settlements;
   const settlementNamesCapitalized = settlementNames.map((settlementName) =>
     capitalizeFirstLetter(settlementName)
   );

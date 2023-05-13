@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { AppContext } from "src/pages/Home/HomePage";
-import { APISuggestion } from "src/types/types";
-import getSuggestions from "src/services/suggestions";
+import { APISuggestion } from "src/types/apiTypes";
+import getSuggestions from "src/services/api/suggestion";
 import Suggestions from "../Suggestions/Suggestions";
 import "./search.sass";
 

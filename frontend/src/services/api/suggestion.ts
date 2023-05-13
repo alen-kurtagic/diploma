@@ -1,4 +1,4 @@
-import { APISuggestion } from "src/types/types";
+import { APISuggestion } from "src/types/apiTypes";
 
 const getSuggestions = async (query: string) => {
   const url: string = `https://king2.geosx.io/king/gurs/_sx1/gsxsearch?callback=jQuery11240518186399443592_1648644038548&s=${query}`;

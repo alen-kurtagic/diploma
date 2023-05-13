@@ -1,6 +1,6 @@
 import React from "react";
 import Suggestion from "../Suggestion/Suggestion";
-import { APISuggestion } from "src/types/types";
+import { APISuggestion } from "src/types/apiTypes";
 import "./suggestions.sass";
 
 type SuggestionsProps = {

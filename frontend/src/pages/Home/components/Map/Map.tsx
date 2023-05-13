@@ -9,12 +9,10 @@ import {
 } from "react-map-gl";
 import maplibregl from "maplibre-gl";
 import { AppContext } from "src/pages/Home/HomePage";
-import Loading from "src/components/Loading/Loading";
-
+import { getParcelsByBBox } from "src/services/database/parcel";
+import proj4 from "src/utils/projectionDefinitions";
 import "./map.sass";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { getParcels } from "src/services/parcels";
-import proj4 from "src/utils/projectionDefinitions";
 
 // React functional component of the Mp
 const Map = () => {
@@ -63,7 +61,7 @@ const Map = () => {
       bounds._ne.lat,
     ];
 
-    const parcels = await getParcels(bbox);
+    const parcels = await getParcelsByBBox(bbox);
 
     setParcels(parcels);
   };

@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { AppContext } from "src/pages/Home/HomePage";
-import { APISuggestion } from "src/types/types";
+import { APISuggestion } from "src/types/apiTypes";
 import "./suggestion.sass";
 
 type SuggestionProps = {

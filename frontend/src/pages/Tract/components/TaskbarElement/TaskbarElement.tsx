@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import "./taskbar-element.sass";
 import { TractPageContext } from "src/pages/Tract/TractPage";
+import { TractLayers } from "src/types/tractTypes";
 
 interface TaskbarElementProps {
   id: string;
@@ -9,13 +10,14 @@ interface TaskbarElementProps {
 }
 
 const TaskbarElement = ({ id, color, imgSrc }: TaskbarElementProps) => {
-  const appContext = useContext(TractPageContext);
+  const tractContext = useContext(TractPageContext);
 
   const handleClick = () => {
-    appContext.setLayers({
-      culture: !appContext.layers.culture,
-    });
+    const newLayers = { ...tractContext.layers };
+    newLayers.culture.visibility = !newLayers.culture.visibility;
+    tractContext.setLayers(newLayers);
   };
+
   return (
     <div
       className="taskbar-element-container"

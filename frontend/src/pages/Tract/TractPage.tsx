@@ -1,7 +1,7 @@
 import Navigation from "./components/Navigation/Navigation";
 import TractMap from "./components/TractMap/TractMap";
 import Loading from "src/components/Loading/Loading";
-import { TractFetchData, TractPageState } from "src/types/types";
+import { TractLayers, TractPageState } from "src/types/tractTypes";
 import { createContext, useRef, useState } from "react";
 import { MapRef, ViewState } from "react-map-gl";
 import { useLocation } from "react-router-dom";
@@ -16,14 +16,27 @@ export const TractPageContext = createContext<TractPageState>({
   handleViewState: (newViewState: Partial<ViewState>) => {},
   reactMapRef: null,
   ids: undefined,
-  fetchedData: undefined,
-  setFetchedData: (data: TractFetchData) => {},
   loading: true,
   setLoading: () => {},
   layers: {
-    culture: true,
+    parcel: {
+      visibility: true,
+      data: {
+        type: "FeatureCollection",
+        features: [],
+      },
+    },
+    culture: {
+      visibility: true,
+      data: {
+        type: "FeatureCollection",
+        features: [],
+      },
+    },
   },
   setLayers: () => {},
+  settlements: [],
+  setSettlements: () => {},
 });
 
 function TractPage() {
@@ -33,23 +46,26 @@ function TractPage() {
   const idsParam = params.get("ids");
   const ids: Array<number> | undefined = idsParam?.split(",").map(Number);
 
-  const [fetchedData, setFetchedData] = useState<TractFetchData>({
-    tract: {
-      geoJson: {
+  const [loading, setLoading] = useState(true);
+
+  const [layers, setLayers] = useState<TractLayers>({
+    parcel: {
+      visibility: true,
+      data: {
         type: "FeatureCollection",
         features: [],
       },
-      culture: {
+    },
+    culture: {
+      visibility: true,
+      data: {
         type: "FeatureCollection",
         features: [],
       },
-      settlementNames: [],
     },
   });
 
-  const [loading, setLoading] = useState(true);
-
-  const [layers, setLayers] = useState({ culture: true });
+  const [settlements, setSettlements] = useState<Array<string>>([]);
 
   const [viewState, setViewState] = useState<Partial<ViewState>>({
     latitude: 46.1491664,
@@ -70,12 +86,12 @@ function TractPage() {
         handleViewState,
         reactMapRef,
         ids,
-        fetchedData,
-        setFetchedData,
         loading,
         setLoading,
         layers,
         setLayers,
+        settlements,
+        setSettlements,
       }}
     >
       <div className="tract-page">

@@ -12,11 +12,15 @@ import bbox from "@turf/bbox";
 import "./tract-map.sass";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { BBox } from "@turf/turf";
-import { getTract } from "src/services/tract";
+import { getParcelsByIds } from "src/services/database/parcel";
+import { getSettlementByCode } from "src/services/database/settlement";
+import { TractLayers } from "src/types/tractTypes";
+import { APISettlement } from "src/types/apiTypes";
+import { getCulture } from "src/services/api/culture";
 
 // React functional component of the Mp
 const TractMap = () => {
-  const appContext = useContext(TractPageContext);
+  const tractContext = useContext(TractPageContext);
 
   const [maxBounds, setMaxBounds] = useState<null | number[][]>(null);
 
@@ -26,7 +30,7 @@ const TractMap = () => {
 
     const bounds: BBox = bbox({
       type: "FeatureCollection",
-      features: appContext.fetchedData?.tract.geoJson?.features,
+      features: tractContext.layers.parcel.data.features,
     });
 
     event.target.fitBounds(bounds as [number, number, number, number], {
@@ -37,12 +41,12 @@ const TractMap = () => {
       handleMaxBounds(bounds);
     });
 
-    appContext.setLoading(false);
+    tractContext.setLoading(false);
   };
 
   // Function that updates the map once the user has moved.
   const handleMove = (event: ViewStateChangeEvent) => {
-    appContext.handleViewState(event.viewState);
+    tractContext.handleViewState(event.viewState);
   };
 
   const handleMaxBounds = (bounds: BBox) => {
@@ -61,22 +65,47 @@ const TractMap = () => {
     // Set the expanded bounds as the maxBounds property
     setMaxBounds(expandedBounds);
   };
-
   useEffect(() => {
-    getTract(appContext.ids!).then((tract) => {
-      appContext.setFetchedData(tract);
-    });
+    let abort = false;
+
+    const fetchData = async () => {
+      if (abort) return;
+
+      const newLayers: TractLayers = tractContext.layers;
+
+      const parcels = await getParcelsByIds(tractContext.ids!);
+      newLayers.parcel.data = parcels;
+
+      const tractBounds: BBox = bbox(parcels) as BBox;
+      const culture = await getCulture(tractBounds);
+      newLayers.culture.data = culture;
+
+      tractContext.setLayers(newLayers);
+
+      const codes: Array<number> = parcels.features.map(
+        (feature) => feature.properties?.ko_id
+      );
+      const settlements: Array<string> = await getSettlementByCode(codes);
+
+      tractContext.setSettlements(settlements);
+    };
+
+    fetchData();
+
+    return () => {
+      abort = true;
+    };
   }, []);
 
   const interactiveLayerIds = ["properties-fill"];
 
-  console.log(appContext.fetchedData?.tract.geoJson);
+  console.log(tractContext.layers.culture.visibility);
 
   return (
     <div className="tract-map">
       <ReactMap
-        {...appContext.viewState}
-        ref={appContext.reactMapRef}
+        {...tractContext.viewState}
+        ref={tractContext.reactMapRef}
         mapLib={maplibregl}
         onMove={handleMove}
         onLoad={handleMapLoad}
@@ -88,7 +117,7 @@ const TractMap = () => {
       >
         <Source
           type="geojson"
-          data={appContext.fetchedData?.tract.geoJson}
+          data={tractContext.layers.parcel.data}
           tolerance={0}
         >
           <Layer
@@ -99,14 +128,14 @@ const TractMap = () => {
               "fill-extrusion-height": 3,
               "fill-extrusion-base": 0,
             }}
-            filter={["any", ["in", ["id"], ["literal", appContext.ids]]]}
+            filter={["any", ["in", ["id"], ["literal", tractContext.ids]]]}
             //beforeId="properties"
           />
         </Source>
 
         <Source
           type="geojson"
-          data={appContext.fetchedData?.tract.culture}
+          data={tractContext.layers.culture.data}
           tolerance={0}
         >
           <Layer
@@ -116,7 +145,9 @@ const TractMap = () => {
               "fill-extrusion-color": "#ADD8E6",
               "fill-extrusion-height": 1,
               "fill-extrusion-base": 0,
-              "fill-extrusion-opacity": appContext.layers.culture ? 1 : 0,
+              "fill-extrusion-opacity": tractContext.layers.culture.visibility
+                ? 1
+                : 0,
             }}
             //beforeId="properties"
           />
