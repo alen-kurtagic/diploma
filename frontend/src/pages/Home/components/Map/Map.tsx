@@ -114,8 +114,8 @@ const Map = () => {
               type="line"
               minzoom={14}
               paint={{
-                "line-color": "rgba(180, 180, 180, 0.2)",
-                "line-width": 3,
+                "line-color": "rgba(200, 200, 200, 0.2)",
+                "line-width": 2.5,
               }}
             />
             <Layer

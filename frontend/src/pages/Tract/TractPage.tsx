@@ -1,42 +1,36 @@
 import Navigation from "./components/Navigation/Navigation";
 import TractMap from "./components/TractMap/TractMap";
 import Loading from "src/components/Loading/Loading";
-import { TractLayers, TractPageState } from "src/types/tractTypes";
-import { createContext, useRef, useState } from "react";
+import { PermitLayer, TractPageState } from "src/types/tractTypes";
+import { createContext, useEffect, useRef, useState } from "react";
 import { MapRef, ViewState } from "react-map-gl";
 import { useLocation } from "react-router-dom";
-import Header from "./components/Header/Header";
-import Taskbar from "./components/Taskbar/Taskbar";
-import Categories from "./components/Categories/Categories";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./tract-page.sass";
+import Side from "./components/Side/Side";
 
 export const TractPageContext = createContext<TractPageState>({
   viewState: {},
-  handleViewState: (newViewState: Partial<ViewState>) => {},
+  handleViewState: () => {},
   reactMapRef: null,
   ids: undefined,
   loading: true,
   setLoading: () => {},
-  layers: {
-    parcel: {
-      visibility: true,
-      data: {
-        type: "FeatureCollection",
-        features: [],
-      },
-    },
-    culture: {
-      visibility: true,
-      data: {
-        type: "FeatureCollection",
-        features: [],
-      },
-    },
+  tract: {
+    type: "FeatureCollection",
+    features: [],
   },
-  setLayers: () => {},
+  setTract: () => {},
+  permitLayers: [],
+  setPermitLayers: () => {},
   settlements: [],
   setSettlements: () => {},
+  streets: [],
+  setStreets: () => {},
+  filter: "",
+  setFilter: () => {},
+  selectedFeatureId: undefined,
+  setSelectedFeatureId: () => {},
 });
 
 function TractPage() {
@@ -48,24 +42,20 @@ function TractPage() {
 
   const [loading, setLoading] = useState(true);
 
-  const [layers, setLayers] = useState<TractLayers>({
-    parcel: {
-      visibility: true,
-      data: {
-        type: "FeatureCollection",
-        features: [],
-      },
-    },
-    culture: {
-      visibility: true,
-      data: {
-        type: "FeatureCollection",
-        features: [],
-      },
-    },
+  const [filter, setFilter] = useState<string>("");
+
+  const [tract, setTract] = useState<GeoJSON.FeatureCollection>({
+    type: "FeatureCollection",
+    features: [],
   });
 
+  const [permitLayers, setPermitLayers] = useState<Array<PermitLayer>>([]);
+
   const [settlements, setSettlements] = useState<Array<string>>([]);
+  const [streets, setStreets] = useState<Array<string>>([]);
+  const [selectedFeatureId, setSelectedFeatureId] = useState<
+    number | undefined
+  >(undefined);
 
   const [viewState, setViewState] = useState<Partial<ViewState>>({
     latitude: 46.1491664,
@@ -88,23 +78,24 @@ function TractPage() {
         ids,
         loading,
         setLoading,
-        layers,
-        setLayers,
+        tract,
+        setTract,
+        permitLayers,
+        setPermitLayers,
         settlements,
         setSettlements,
+        streets,
+        setStreets,
+        filter,
+        setFilter,
+        selectedFeatureId,
+        setSelectedFeatureId,
       }}
     >
       <div className="tract-page">
         {loading && <Loading />}
-        <Navigation />
+        <Side />
         <TractMap />
-        {!loading && (
-          <>
-            <Taskbar />
-            <Header />
-            <Categories />
-          </>
-        )}
       </div>
     </TractPageContext.Provider>
   );

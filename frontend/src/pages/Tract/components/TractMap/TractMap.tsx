@@ -5,18 +5,30 @@ import {
   Layer,
   ViewStateChangeEvent,
   MapboxEvent,
+  Popup,
+  MapLayerMouseEvent,
 } from "react-map-gl";
 import maplibregl from "maplibre-gl";
 import { TractPageContext } from "src/pages/Tract/TractPage";
 import bbox from "@turf/bbox";
 import "./tract-map.sass";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { BBox } from "@turf/turf";
+import {
+  intersect,
+  Polygon,
+  MultiPolygon,
+  BBox,
+  featureCollection,
+  centroid,
+} from "@turf/turf";
 import { getParcelsByIds } from "src/services/database/parcel";
+import { getStreetsByIds } from "src/services/database/street";
 import { getSettlementByCode } from "src/services/database/settlement";
-import { TractLayers } from "src/types/tractTypes";
-import { APISettlement } from "src/types/apiTypes";
-import { getCulture } from "src/services/api/culture";
+import { PermitLayer } from "src/types/tractTypes";
+import getAllAPILayers from "src/services/api/kingProstor/apiCaller";
+import PermitSource from "../PermitSource/PermitSource";
+import { Category } from "src/types/permitEnums";
+import { calculateIntersectionPercentage } from "src/utils/intersection";
 
 // React functional component of the Mp
 const TractMap = () => {
@@ -30,7 +42,7 @@ const TractMap = () => {
 
     const bounds: BBox = bbox({
       type: "FeatureCollection",
-      features: tractContext.layers.parcel.data.features,
+      features: tractContext.tract.features,
     });
 
     event.target.fitBounds(bounds as [number, number, number, number], {
@@ -71,23 +83,67 @@ const TractMap = () => {
     const fetchData = async () => {
       if (abort) return;
 
-      const newLayers: TractLayers = tractContext.layers;
+      const tract = await getParcelsByIds(tractContext.ids!);
 
-      const parcels = await getParcelsByIds(tractContext.ids!);
-      newLayers.parcel.data = parcels;
+      tractContext.setTract(tract);
 
-      const tractBounds: BBox = bbox(parcels) as BBox;
-      const culture = await getCulture(tractBounds);
-      newLayers.culture.data = culture;
+      const tractBounds: BBox = bbox(tract) as BBox;
 
-      tractContext.setLayers(newLayers);
+      const permitLayers = await getAllAPILayers(tractBounds);
 
-      const codes: Array<number> = parcels.features.map(
+      const permits: Array<PermitLayer> = permitLayers
+        .map(({ category, data }) => {
+          const intersectingFeatures = data.features.filter((dataFeature) => {
+            return tract.features.some((tractFeature) => {
+              return (
+                intersect(
+                  tractFeature as GeoJSON.Feature<
+                    GeoJSON.Polygon | GeoJSON.MultiPolygon
+                  >,
+                  dataFeature as GeoJSON.Feature<
+                    GeoJSON.Polygon | GeoJSON.MultiPolygon
+                  >
+                ) !== null
+              );
+            });
+          });
+
+          if (intersectingFeatures.length > 0) {
+            const difficulty = calculateIntersectionPercentage(tract, data);
+            const visibility = true;
+            return {
+              category,
+              difficulty,
+              visibility,
+              data: featureCollection(intersectingFeatures),
+            };
+          }
+        })
+        .filter((permit): permit is PermitLayer => permit !== undefined);
+
+      // const permits: Array<PermitLayer> = permitLayers.map(
+      //   ({ category, data }) => {
+      //     const array = [];
+      //     data;
+      //     const difficulty = calculateIntersectionPercentage(tract, data);
+      //     const visibility = true;
+      //     return { category, difficulty, visibility, data };
+      //   }
+      // );
+
+      tractContext.setPermitLayers(permits);
+
+      const codes: Array<number> = tract.features.map(
         (feature) => feature.properties?.ko_id
       );
+
       const settlements: Array<string> = await getSettlementByCode(codes);
 
       tractContext.setSettlements(settlements);
+
+      const streets: Array<string> = await getStreetsByIds(tractContext.ids!);
+
+      tractContext.setStreets(streets);
     };
 
     fetchData();
@@ -97,9 +153,30 @@ const TractMap = () => {
     };
   }, []);
 
-  const interactiveLayerIds = ["properties-fill"];
+  const interactiveLayerIds = [
+    "tract",
+    "selectedFeature",
+    ...Object.values(Category),
+  ];
 
-  console.log(tractContext.layers.culture.visibility);
+  const handleFeatureClick = (event: any) => {
+    const features = tractContext.reactMapRef.current.queryRenderedFeatures(
+      event.point
+    );
+    if (features.length > 0) {
+    }
+  };
+
+  const permitSources = tractContext.permitLayers.map(
+    ({ category, visibility, data }, index) => {
+      return PermitSource({
+        category: category,
+        visibility: visibility,
+        height: index + 1,
+        data: data,
+      });
+    }
+  );
 
   return (
     <div className="tract-map">
@@ -114,44 +191,22 @@ const TractMap = () => {
         interactiveLayerIds={interactiveLayerIds}
         boxZoom={false}
         maxBounds={maxBounds}
+        onClick={handleFeatureClick}
       >
-        <Source
-          type="geojson"
-          data={tractContext.layers.parcel.data}
-          tolerance={0}
-        >
+        <Source type="geojson" data={tractContext.tract} tolerance={0}>
           <Layer
-            id="selected-properties"
+            id="tract"
             type="fill-extrusion"
             paint={{
               "fill-extrusion-color": "#0D99FF",
-              "fill-extrusion-height": 3,
+              "fill-extrusion-height": 5,
               "fill-extrusion-base": 0,
             }}
             filter={["any", ["in", ["id"], ["literal", tractContext.ids]]]}
             //beforeId="properties"
           />
         </Source>
-
-        <Source
-          type="geojson"
-          data={tractContext.layers.culture.data}
-          tolerance={0}
-        >
-          <Layer
-            id="culture"
-            type="fill-extrusion"
-            paint={{
-              "fill-extrusion-color": "#ADD8E6",
-              "fill-extrusion-height": 1,
-              "fill-extrusion-base": 0,
-              "fill-extrusion-opacity": tractContext.layers.culture.visibility
-                ? 1
-                : 0,
-            }}
-            //beforeId="properties"
-          />
-        </Source>
+        {permitSources}
       </ReactMap>
     </div>
   );

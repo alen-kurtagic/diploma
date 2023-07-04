@@ -1,15 +1,17 @@
-import { TractPageContext } from "src/pages/Tract/TractPage";
-// import SurfaceArea from "../SurfaceArea/SurfaceArea";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import {
   capitalizeFirstLetter,
   replaceLastCommaWithAnd,
 } from "src/utils/stringManipulation";
+import { TractPageContext } from "src/pages/Tract/TractPage";
 import "./header.sass";
+import Share from "../Share/Share";
+import Save from "../Save/Save";
 
 const Header = () => {
   const tractContext = useContext(TractPageContext);
 
+  console.log(tractContext.tract);
   const settlementNames = tractContext.settlements;
   const settlementNamesCapitalized = settlementNames.map((settlementName) =>
     capitalizeFirstLetter(settlementName)
@@ -18,17 +20,45 @@ const Header = () => {
     settlementNamesCapitalized.join(", ")
   );
 
-  const title: string = settlementNamesAnd;
+  const settlementName: string = settlementNamesAnd;
 
-  const subtitle: string = "x".toString();
+  const streetNames = tractContext.streets;
+
+  const streetName = streetNames[0];
+
+  const [expandedState, setExpandedState] = useState<"share" | "save" | null>(
+    null
+  );
+
+  const toggleShare = () => {
+    setExpandedState((prev) => (prev === "share" ? null : "share"));
+  };
+
+  const toggleSave = () => {
+    setExpandedState((prev) => (prev === "save" ? null : "save"));
+  };
 
   return (
     <div className="header">
-      <span className="titles">
-        <h2>{title}</h2>
-        <p>Gradnja na tem zemljišču zahteva {subtitle} soglasij</p>
-      </span>
-      {/* <SurfaceArea></SurfaceArea> */}
+      <h2 className="settlement">{settlementName}</h2>
+      <h3 className="street">{streetName}</h3>
+      {/* <div className="usage">
+        <img src="src/assets/wheat.svg" />
+      </div> */}
+      <div className="actions">
+        <div className="action" onClick={() => toggleSave()}>
+          <img src="./src/assets/flag.svg" />
+          <p>Shrani</p>
+        </div>
+        <div className="action" onClick={() => toggleShare()}>
+          <img src="./src/assets/share.svg" />
+          <p>Deli</p>
+        </div>
+      </div>
+      {expandedState == "share" && <Share />}
+      {expandedState == "save" && (
+        <Save suggested={`${settlementName} - ${streetName}`} />
+      )}
     </div>
   );
 };

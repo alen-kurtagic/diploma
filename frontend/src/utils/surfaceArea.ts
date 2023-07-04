@@ -7,9 +7,7 @@ import {
 } from "@turf/turf";
 
 // Calculate the total surface area of all features
-function calculateTotalSurfaceArea(
-  featureCollection: GeoJSON.FeatureCollection
-): number {
+function calculateArea(featureCollection: GeoJSON.FeatureCollection): number {
   let totalArea = 0;
 
   (featureCollection as FeatureCollection).features.forEach(
@@ -35,4 +33,18 @@ function calculateTotalSurfaceArea(
   return totalArea;
 }
 
-export { calculateTotalSurfaceArea };
+function formatArea(areaInSquareMeters: number) {
+  const areaInSquareKilometers = areaInSquareMeters / 10000;
+  const unit = areaInSquareKilometers < 0.1 ? "m²" : "ha";
+  const area =
+    areaInSquareKilometers < 0.1
+      ? areaInSquareMeters.toFixed(0)
+      : areaInSquareKilometers.toFixed(1);
+
+  return {
+    unit: unit,
+    area: area.toString().replace(/^0+/, ""),
+  };
+}
+
+export { calculateArea, formatArea };

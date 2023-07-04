@@ -35,8 +35,9 @@ const getByIds = async (
   const idsCondition = `gid = ANY('{${ids.join(",")}}'::int[]) `;
 
   const query = `
-  SELECT gid, ko_id, st_parcele, boniteta, ST_AsGeoJSON((ST_Dump(geom_4326)).geom)::json AS geometry
+  SELECT gid, ko_id, st_parcele, boniteta, settlement ST_AsGeoJSON((ST_Dump(geom_4326)).geom)::json AS geometry
   FROM layers.${tableName}
+  JOIN codebook.settlement ON (ko_id = code)
   WHERE 
   ${idsCondition}
 `;
@@ -62,7 +63,7 @@ const executeQuery = async (
                   geometry: row.geometry,
                   properties: {
                     gid: row.gid,
-                    ko_id: row.ko_id,
+                    settlement: row.settlement,
                     ko: row.ko,
                     st_parcele: row.st_parcele,
                     boniteta: row.boniteta,
@@ -83,4 +84,4 @@ const executeQuery = async (
   );
 };
 
-export { getByBbox, getByIds };
+export { getByBbox, getByIds, tableName };

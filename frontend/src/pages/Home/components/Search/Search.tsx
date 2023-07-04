@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { AppContext } from "src/pages/Home/HomePage";
 import { APISuggestion } from "src/types/apiTypes";
-import getSuggestions from "src/services/api/suggestion";
+import getSuggestions from "src/services/api/suggestions/suggestion";
 import Suggestions from "../Suggestions/Suggestions";
 import "./search.sass";
 
@@ -65,7 +65,7 @@ const Search = () => {
       <div className="search-container">
         <input
           ref={appContext.inputRef}
-          placeholder="Išči po zemljevidu..."
+          placeholder="Išči"
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}

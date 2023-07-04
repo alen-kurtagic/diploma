@@ -1,3 +1,4 @@
+import { getStreetByIds } from "src/database/models/Street";
 import { getByBbox, getByIds } from "../database/models/Parcel";
 import { FeatureCollection, GeoJsonProperties } from "geojson";
 
@@ -25,4 +26,13 @@ const getParcelsByIds = async (
   }
 };
 
-export { getParcelsByBBox, getParcelsByIds };
+const getStreetsByIds = async (ids: Array<number>): Promise<Array<string>> => {
+  try {
+    const streets: Array<string> = await getStreetByIds(ids);
+    return streets;
+  } catch (error) {
+    throw new Error(`Failed to fetch closest street by ids`);
+  }
+};
+
+export { getParcelsByBBox, getParcelsByIds, getStreetsByIds };

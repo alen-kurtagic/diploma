@@ -1,0 +1,32 @@
+@import "src/variables.sass"
+
+.filter-container
+    position: relative
+    display: flex
+    align-items: center
+
+.filter-container input
+    width: 100%
+    height: 35px
+    border: none
+    border-bottom: 2px solid #c2c2c2
+    font-size: 1rem
+    padding-left: 40px
+    // box-shadow: 5.7px 5.9px 7.2px -4px rgba(0, 0, 0, 0.22), 15.7px 16.3px 20px -4px rgba(0, 0, 0, 0.039), 37.7px 39.2px 48.2px -4px rgba(0, 0, 0, 0.051), 125px 130px 160px -4px rgba(0, 0, 0, 0.07)
+
+.filter-container input::placeholder
+    color: $darkgray
+
+.filter-container img
+    height: 24px
+    width: 24px
+    position: absolute
+
+.filter-container .search-icon
+    left: 5px
+
+.filter-container .clear-input
+    height: 22px
+    width: 22px
+    right: 10px
+    cursor: pointer

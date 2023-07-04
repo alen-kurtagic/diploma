@@ -1,7 +1,8 @@
 import { GeoJSONFeature } from "maplibre-gl";
-import { APIParcels } from "src/types/apiTypes";
 
-const getParcelsByBBox = async (bbox: Array<number>): Promise<APIParcels> => {
+const getParcelsByBBox = async (
+  bbox: Array<number>
+): Promise<GeoJSON.FeatureCollection> => {
   const url = `http://localhost:3000/layer/parcel?bbox=${bbox.join(",")}`;
   const response: Response = await fetch(url);
   if (!response.ok) {
@@ -21,7 +22,9 @@ const getParcelsByBBox = async (bbox: Array<number>): Promise<APIParcels> => {
   return data;
 };
 
-const getParcelsByIds = async (ids: Array<number>): Promise<APIParcels> => {
+const getParcelsByIds = async (
+  ids: Array<number>
+): Promise<GeoJSON.FeatureCollection> => {
   const url = `http://localhost:3000/layer/parcel?ids=${ids.join(",")}`;
   const response: Response = await fetch(url);
   if (!response.ok) {

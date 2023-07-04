@@ -111,6 +111,8 @@ function HomePage() {
     });
   }, []);
 
+  const selected: boolean = selectedFeatures.length > 0;
+
   return (
     // Provider component that provides viewState, handleViewState, and
     // goToLocation properties to all descendants of this component
@@ -133,7 +135,7 @@ function HomePage() {
         {loading && <Loading />}
         <Search></Search>
         <Map></Map>
-        <Confirm></Confirm>
+        {selected && <Confirm></Confirm>}
       </div>
     </AppContext.Provider>
   );

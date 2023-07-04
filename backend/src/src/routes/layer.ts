@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import {
   getParcelsByBBox,
   getParcelsByIds,
+  getStreetsByIds,
 } from "../controllers/layerController";
 import { formatBbox } from "../utils/bbox";
 
@@ -35,6 +36,35 @@ router.get(
       }
 
       res.json(parcels);
+    } catch (error) {
+      if (error instanceof TypeError) {
+        res.status(400).send(error.message);
+        console.error(error);
+      } else if (error instanceof Error) {
+        res.status(500).send(error.message);
+        console.error(error);
+      }
+    }
+  }
+);
+
+router.get(
+  "/layer/street",
+  async (req: Request, res: Response): Promise<void> => {
+    const { ids } = req.query as ParcelQueryParams;
+
+    try {
+      let streets: Array<string>;
+
+      if (ids && ids !== "undefined") {
+        const idsArray = ids?.toString().split(",").map(Number);
+
+        streets = await getStreetsByIds(idsArray);
+      } else {
+        throw new Error("'ids' query parameter must be provided.");
+      }
+
+      res.json(streets);
     } catch (error) {
       if (error instanceof TypeError) {
         res.status(400).send(error.message);

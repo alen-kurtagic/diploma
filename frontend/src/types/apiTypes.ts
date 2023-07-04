@@ -10,9 +10,7 @@ interface APISuggestion {
   y2: number;
 }
 
-type APIParcels = GeoJSON.FeatureCollection;
-
 interface APISettlement {
   name: string;
 }
-export type { APISuggestion, APIParcels, APISettlement };
+export type { APISuggestion, APISettlement };

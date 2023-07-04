@@ -1,0 +1,93 @@
+@import "src/variables.sass"
+
+.permit-container 
+    height: auto
+    display: flex
+    flex-direction: column
+    width: 100%
+    padding: 15px 25px
+    
+.permit-header
+    width: 100%
+    display: flex
+    align-items: center
+    gap: 20px
+    
+.permit-container:hover
+    background-image: $darken-bg
+    cursor: pointer
+
+.permit-container img
+    height: 25px
+    width: 25px
+
+.permit-container p
+    margin: 0px 0px
+
+.permit-container .data
+    display: flex
+    flex-direction: column
+    gap: 5px
+    overflow: hidden
+
+.permit-container .data .title
+    font-weight: 500
+    font-size: 1rem
+
+.opened .data .subtitle
+    text-overflow: none !important
+    overflow: visible !important
+    white-space: normal !important
+
+.permit-container .data .subtitle
+    color: $darkgray
+    font-weight: 500
+    font-size: 0.75rem
+    margin-top: -5px
+    line-height: 1.1
+    text-overflow: ellipsis
+    overflow: hidden
+    white-space: nowrap
+
+.permit-container .box
+    margin-left: auto
+
+.permit-content
+    display: none
+    padding: 10px 0px 10px 45px
+
+.opened .permit-content
+    display: flex
+    gap: 0px
+    flex-direction: column
+
+.permit-features-title
+    font-weight: 500
+    font-size: 0.8rem
+    color: $darkgray
+
+.permit-features
+    padding: 5px 0px
+    display: flex
+    flex-direction: column
+    gap: 5px
+
+.permit-feature
+    display: flex
+    gap: 10px
+    align-items: center
+
+.permit-feature:hover
+    background-image: $darken-bg
+    cursor: pointer
+
+.permit-feature img
+    height: 20px
+    width: 20px
+
+.permit-feature p
+    font-weight: 500
+    font-size: 0.8rem
+
+
+

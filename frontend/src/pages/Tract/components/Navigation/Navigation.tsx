@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import "./navigation.sass";
 
-const Header = () => {
+const Navigation = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -16,4 +16,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Navigation;
