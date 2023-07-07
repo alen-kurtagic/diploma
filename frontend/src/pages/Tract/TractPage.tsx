@@ -38,7 +38,7 @@ function TractPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const idsParam = params.get("ids");
-  const ids: Array<number> | undefined = idsParam?.split(",").map(Number);
+  const ids: Array<string> | undefined = idsParam?.split(",");
 
   const [loading, setLoading] = useState(true);
 

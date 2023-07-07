@@ -13,17 +13,18 @@ import { getParcelsByBBox } from "src/services/database/parcel";
 import proj4 from "src/utils/projectionDefinitions";
 import "./map.sass";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { TractPageContext } from "src/pages/Tract/TractPage";
 
 // React functional component of the Mp
 const Map = () => {
-  const appContext = useContext(AppContext);
+  const homeContext = useContext(AppContext);
   const geolocateRef = useRef<GeolocateControlRef>(null);
 
   // Function that geolocates the user once the map has been successfully
   // loaded.
   const handleMapLoad = (event: any) => {
     geolocateRef.current?.trigger();
-    appContext.setLoading(false);
+    homeContext.setLoading(false);
   };
 
   const transformPolygonCoordinates = (
@@ -49,10 +50,10 @@ const Map = () => {
   // Function that calls the API to draw layers once the user has stopped
   // moving the map.
   const handleMoveEnd = async () => {
-    if (!appContext.reactMapRef.current) return;
+    if (!homeContext.reactMapRef.current) return;
 
     // Get current map view state bounds
-    const bounds = appContext.reactMapRef.current.getBounds();
+    const bounds = homeContext.reactMapRef.current.getBounds();
 
     const bbox = [
       bounds._sw.lng,
@@ -68,26 +69,26 @@ const Map = () => {
 
   // Function that updates the map once the user has moved.
   const handleMove = (event: ViewStateChangeEvent) => {
-    appContext.handleViewState(event.viewState);
+    homeContext.handleViewState(event.viewState);
   };
 
   const handleFeatureClick = (event: any) => {
     if (event.features == null || event.features.length == 0) {
-      appContext.setSelectedFeatures([]);
+      homeContext.setSelectedFeatures([]);
       return;
     }
     const clickedFeature = event.features[0];
-
-    if (appContext.shiftPressed.current) {
+    console.log(clickedFeature);
+    if (homeContext.shiftPressed.current) {
       // Create a new array in memory, since React only performs shallow
       // comparison to check if the reference to the array has changed
       // we cannot reference the old array and push new element to it.
-      appContext.setSelectedFeatures([
-        ...appContext.selectedFeatures,
+      homeContext.setSelectedFeatures([
+        ...homeContext.selectedFeatures,
         clickedFeature,
       ]);
     } else {
-      appContext.setSelectedFeatures([clickedFeature]);
+      homeContext.setSelectedFeatures([clickedFeature]);
     }
   };
   const interactiveLayerIds = ["properties-fill"];
@@ -96,8 +97,8 @@ const Map = () => {
     <>
       <div className="map">
         <ReactMap
-          {...appContext.viewState}
-          ref={appContext.reactMapRef}
+          {...homeContext.viewState}
+          ref={homeContext.reactMapRef}
           mapLib={maplibregl}
           onLoad={handleMapLoad}
           onMove={handleMove}
@@ -141,7 +142,7 @@ const Map = () => {
                   ["id"],
                   [
                     "literal",
-                    appContext.selectedFeatures?.map(
+                    homeContext.selectedFeatures?.map(
                       (feature: any) => feature.id
                     ),
                   ],

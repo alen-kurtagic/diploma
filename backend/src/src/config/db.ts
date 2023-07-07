@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config({
   debug: true,
-  path: "C:/University/Year 3/Term 2/Diplomsko delo/gradbena-soglasja/backend/.env",
+  path: "./../.env",
 });
 
 const PORT = process.env.PORT || 3000;

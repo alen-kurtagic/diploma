@@ -12,7 +12,7 @@ interface TractPageState {
   viewState: any;
   handleViewState: (newViewState: Partial<ViewState>) => void;
   reactMapRef: any;
-  ids: Array<number> | undefined;
+  ids: Array<string> | undefined;
   loading: boolean;
   setLoading: (loading: boolean) => void;
   tract: GeoJSON.FeatureCollection;

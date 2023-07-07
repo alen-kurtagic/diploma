@@ -3,7 +3,7 @@ import { GeoJSONFeature } from "maplibre-gl";
 const getParcelsByBBox = async (
   bbox: Array<number>
 ): Promise<GeoJSON.FeatureCollection> => {
-  const url = `http://localhost:3000/layer/parcel?bbox=${bbox.join(",")}`;
+  const url = `http://localhost:3000/data/parcels?bbox=${bbox.join(",")}`;
   const response: Response = await fetch(url);
   if (!response.ok) {
     throw new Error(`API request failed with status ${response.status}`);
@@ -13,7 +13,7 @@ const getParcelsByBBox = async (
   const features = data.features.map((feature: GeoJSONFeature) => {
     return {
       ...feature,
-      id: feature.properties.gid,
+      id: feature.properties.parcel_id,
     };
   });
 
@@ -23,9 +23,9 @@ const getParcelsByBBox = async (
 };
 
 const getParcelsByIds = async (
-  ids: Array<number>
+  ids: Array<string>
 ): Promise<GeoJSON.FeatureCollection> => {
-  const url = `http://localhost:3000/layer/parcel?ids=${ids.join(",")}`;
+  const url = `http://localhost:3000/data/parcels?ids=${ids.join(",")}`;
   const response: Response = await fetch(url);
   if (!response.ok) {
     throw new Error(`API request failed with status ${response.status}`);
@@ -35,7 +35,7 @@ const getParcelsByIds = async (
   const features = data.features.map((feature: GeoJSONFeature) => {
     return {
       ...feature,
-      id: feature.properties.gid,
+      id: feature.properties.parcel_id,
     };
   });
 

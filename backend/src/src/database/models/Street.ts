@@ -1,16 +1,28 @@
 import { QueryResult, QueryResultRow } from "pg";
 import { pool } from "../connection";
-import { tableName as parcelTableName } from "./Parcel";
+import { parcelsTableName } from "./Parcel";
 
-const tableName = "streets";
+const streetsTableName = "data.streets";
 
-const getStreetByIds = async (ids: Array<number>): Promise<Array<string>> => {
+const getStreetByIds = async (ids: Array<string>): Promise<Array<string>> => {
   const query = `
-  SELECT naziv, ST_Distance(layers.${tableName}.geom_4326::geography, parcel.geom_4326::geography) AS distance
-  FROM layers.${tableName}, (SELECT geom_4326 FROM layers.${parcelTableName} WHERE gid = ANY('{${ids.join(
-    ","
-  )}}'::int[])) AS parcel WHERE ST_DWithin(layers.${tableName}.geom_4326::geometry, parcel.geom_4326::geometry, 0.0005) ORDER BY distance ASC LIMIT 4
+  SELECT 
+    street, 
+    ST_Distance(${streetsTableName}.geom_4326::geography, parcel.geom_4326::geography) AS distance
+  FROM 
+    ${streetsTableName}, 
+    (
+        SELECT 
+        geom_4326 
+        FROM ${parcelsTableName} 
+        WHERE parcel_id IN ('${ids.join("', '")}')
+    ) AS parcel 
+    WHERE 
+    ST_DWithin(${streetsTableName}.geom_4326::geometry, parcel.geom_4326::geometry, 0.0005) 
+    ORDER BY distance ASC 
+    LIMIT 4
   `;
+  console.log(query);
 
   return new Promise<Array<string>>((resolve, reject) => {
     pool.query<QueryResultRow>(
@@ -19,7 +31,7 @@ const getStreetByIds = async (ids: Array<number>): Promise<Array<string>> => {
         if (error) {
           reject(error);
         } else {
-          const street: Array<string> = result.rows.map((row) => row.naziv);
+          const street: Array<string> = result.rows.map((row) => row.street);
           resolve(street);
         }
       }

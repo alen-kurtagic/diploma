@@ -1,7 +1,7 @@
 {
   "include": ["src/**/*.ts"],
   "compilerOptions": {
-    "module": "esnext" /* Specify what module code is generated. */,
+    "module": "commonjs" /* Specify what module code is generated. */,
     "moduleResolution": "node",
     "outDir": "build",
     "rootDir": "src",

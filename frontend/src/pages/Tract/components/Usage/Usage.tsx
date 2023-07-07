@@ -13,7 +13,7 @@ const Usage = () => {
     if (code >= 10000 && code < 20000) {
       return {
         img: "src/assets/building.svg",
-        color: "#804106",
+        color: "#AD3C3C",
         hint: "Stavbna",
       };
     } else if (code >= 20000 && code < 30000) {
@@ -50,12 +50,12 @@ const Usage = () => {
 
   const usageCategoryMap = new Map();
   tractContext.tract.features
-    .flatMap((feature) => feature.properties?.usage || [])
-    .map((usg) => getUsageCategory(usg.sifra))
+    .flatMap((feature) => feature.properties?.landuse || [])
+    .map((landuse) => getUsageCategory(landuse.code))
     .forEach((category) => usageCategoryMap.set(category.hint, category));
 
   const uniqueUsageCategories = Array.from(usageCategoryMap.values());
-
+  console.log(uniqueUsageCategories);
   return (
     <div className="usages">
       {uniqueUsageCategories.map((usageCategory: any) => {

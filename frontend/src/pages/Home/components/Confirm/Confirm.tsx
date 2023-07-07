@@ -11,7 +11,9 @@ const Confirm = () => {
 
   // Navigate to DetailsPage when button is clicked and feature selected
   const handleClick = () => {
-    const ids = appContext.selectedFeatures.map((feature) => feature.id);
+    const ids: Array<string> = appContext.selectedFeatures.map(
+      (feature) => feature.properties.parcel_id
+    );
     if (selected) navigate(`/tract?ids=${ids.join(",")}`);
   };
 

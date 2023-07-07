@@ -49,14 +49,6 @@ const Overview = () => {
   const averageRating = ratingSum / tractContext.tract.features.length;
   const ratings = ratingEach.join(", ");
 
-  const planned_usage: Array<Array<any>> = tractContext.tract.features.map(
-    (feature) =>
-      feature.properties?.usage.map((usage: any) => [
-        usage.opis_sl,
-        usage.delez,
-      ])
-  );
-
   return (
     <div className="overview">
       <OverviewElement

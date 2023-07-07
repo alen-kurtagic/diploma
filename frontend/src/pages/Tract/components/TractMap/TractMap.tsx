@@ -33,6 +33,8 @@ import { calculateIntersectionPercentage } from "src/utils/intersection";
 const TractMap = () => {
   const tractContext = useContext(TractPageContext);
 
+  tractContext.setLoading(false);
+
   const [maxBounds, setMaxBounds] = useState<null | number[][]>(null);
 
   // Function that fits the map view to the selected tract.
@@ -51,8 +53,6 @@ const TractMap = () => {
     event.target.once("zoomend", function () {
       handleMaxBounds(bounds);
     });
-
-    tractContext.setLoading(false);
   };
 
   // Function that updates the map once the user has moved.
@@ -193,7 +193,10 @@ const TractMap = () => {
               "fill-extrusion-height": 5,
               "fill-extrusion-base": 0,
             }}
-            filter={["any", ["in", ["id"], ["literal", tractContext.ids]]]}
+            filter={[
+              "any",
+              ["in", ["get", "parcel_id"], ["literal", tractContext.ids]],
+            ]}
             //beforeId="properties"
           />
         </Source>
