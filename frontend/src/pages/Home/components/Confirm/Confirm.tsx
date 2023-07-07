@@ -1,43 +1,43 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AppContext } from "src/pages/Home/HomePage";
 import pako from "pako";
+import { AppContext } from "src/pages/Home/HomePage";
 import "./confirm.sass";
 
+// Utility function to compress and encode data
+function compressData(data: string | Uint8Array | ArrayBuffer) {
+  const compressedArray = pako.deflate(data);
+
+  let binaryString = "";
+  compressedArray.forEach((byte) => {
+    binaryString += String.fromCharCode(byte);
+  });
+
+  const base64String = btoa(binaryString);
+  return encodeURIComponent(base64String);
+}
+
+// Function to get the right button class
+function getButtonClass(isSelected: boolean) {
+  return `confirm ${isSelected ? "secondaryColor" : ""}`;
+}
+
 const Confirm = () => {
-  const appContext = useContext(AppContext);
+  const { selectedFeatures } = useContext(AppContext);
   const navigate = useNavigate();
 
-  const selected: boolean = appContext.selectedFeatures.length > 0;
+  const selected = selectedFeatures.length > 0;
 
-  // Navigate to DetailsPage when button is clicked and feature selected
   const handleClick = () => {
-    const ids: Array<string> = appContext.selectedFeatures.map(
-      (feature) => feature.properties.parcel_id
-    );
-    // Compress the data
-    const compressedIdsArray = pako.deflate(`ids=${ids.join(",")}`);
+    const ids = selectedFeatures.map((feature) => feature.properties.parcel_id);
 
-    // Convert the Uint8Array to a binary string
-    let binaryString = "";
-    compressedIdsArray.forEach((byte) => {
-      binaryString += String.fromCharCode(byte);
-    });
+    const compressedIds = compressData(`ids=${ids.join(",")}`);
 
-    // Encode the binary string in Base64
-    const base64String = btoa(binaryString);
-
-    // Use encodeURIComponent on the Base64 string
-    const urlSafeString = encodeURIComponent(base64String);
-
-    if (selected) navigate(`/tract?${urlSafeString}`);
+    if (selected) navigate(`/tract?${compressedIds}`);
   };
 
   return (
-    <button
-      className={`confirm ${selected ? "secondaryColor" : ""}`}
-      onClick={handleClick}
-    >
+    <button className={getButtonClass(selected)} onClick={handleClick}>
       <img src="src/assets/tick.svg"></img>
     </button>
   );

@@ -8,12 +8,12 @@ import {
   ViewStateChangeEvent,
 } from "react-map-gl";
 import maplibregl from "maplibre-gl";
+import { TractPageContext } from "src/pages/Tract/TractPage";
 import { AppContext } from "src/pages/Home/HomePage";
 import { getParcelsByBBox } from "src/services/database/parcel";
 import proj4 from "src/utils/projectionDefinitions";
-import "./map.sass";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { TractPageContext } from "src/pages/Tract/TractPage";
+import "./map.sass";
 
 // React functional component of the Mp
 const Map = () => {

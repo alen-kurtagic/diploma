@@ -6,8 +6,8 @@ import Confirm from "./components/Confirm/Confirm";
 import Loading from "src/components/Loading/Loading";
 import { HomePageState, goToParams } from "src/types/homeTypes";
 import Search from "./components/Search/Search";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { APISuggestion } from "src/types/apiTypes";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./home-page.sass";
 
 // Context object that will be used to share the state used
