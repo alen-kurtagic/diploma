@@ -5,22 +5,13 @@ import {
   Layer,
   ViewStateChangeEvent,
   MapboxEvent,
-  Popup,
-  MapLayerMouseEvent,
 } from "react-map-gl";
 import maplibregl from "maplibre-gl";
 import { TractPageContext } from "src/pages/Tract/TractPage";
 import bbox from "@turf/bbox";
 import "./tract-map.sass";
 import "maplibre-gl/dist/maplibre-gl.css";
-import {
-  intersect,
-  Polygon,
-  MultiPolygon,
-  BBox,
-  featureCollection,
-  centroid,
-} from "@turf/turf";
+import { intersect, BBox, featureCollection } from "@turf/turf";
 import { getParcelsByIds } from "src/services/database/parcel";
 import { getStreetsByIds } from "src/services/database/street";
 import { PermitLayer } from "src/types/tractTypes";
@@ -28,17 +19,16 @@ import getAllAPILayers from "src/services/api/kingProstor/apiCaller";
 import PermitSource from "../PermitSource/PermitSource";
 import { Category } from "src/types/permitEnums";
 import { calculateIntersectionPercentage } from "src/utils/intersection";
+import { useQuery } from "react-query";
 
 // React functional component of the Mp
 const TractMap = () => {
   const tractContext = useContext(TractPageContext);
 
-  tractContext.setLoading(false);
-
   const [maxBounds, setMaxBounds] = useState<null | number[][]>(null);
 
   // Function that fits the map view to the selected tract.
-  const handleMapLoad = (event: MapboxEvent) => {
+  const fitToTract = () => {
     const padding = 125; // fit bounds padding in pixels
 
     const bounds: BBox = bbox({
@@ -46,11 +36,17 @@ const TractMap = () => {
       features: tractContext.tract.features,
     });
 
-    event.target.fitBounds(bounds as [number, number, number, number], {
-      padding: padding,
-    });
+    console.log("reading tract");
+    console.log(tractContext.tract);
 
-    event.target.once("zoomend", function () {
+    tractContext.reactMapRef.current.fitBounds(
+      bounds as [number, number, number, number],
+      {
+        padding: padding,
+      }
+    );
+
+    tractContext.reactMapRef.current.once("zoomend", function () {
       handleMaxBounds(bounds);
     });
   };
@@ -76,79 +72,37 @@ const TractMap = () => {
     // Set the expanded bounds as the maxBounds property
     setMaxBounds(expandedBounds);
   };
+
+  const fetchTractData = async () => {
+    const tract = await getParcelsByIds(tractContext.ids!);
+    const tractBounds: BBox = bbox(tract) as BBox;
+    const permitLayers = await getAllAPILayers(tractBounds);
+    const streets: Array<string> = await getStreetsByIds(tractContext.ids!);
+
+    return { tract, permitLayers, streets };
+  };
+
+  const { data, isLoading, isError } = useQuery("tractData", fetchTractData);
+
   useEffect(() => {
-    let abort = false;
+    if (isLoading || isError || !data) return;
+    console.log("writing tract");
+    console.log(data.tract);
+    // Note: You may need to modify the data as needed before setting the state.
+    tractContext.setTract(data.tract);
+    // tractContext.setPermitLayers(data.permitLayers);
+    tractContext.setStreets(data.streets);
 
-    const fetchData = async () => {
-      if (abort) return;
+    tractContext.setLoading(false);
+  }, [data, isLoading, isError]);
 
-      const tract = await getParcelsByIds(tractContext.ids!);
+  useEffect(() => {
+    if (tractContext.tract.features.length > 0) {
+      fitToTract();
+    }
+  }, [tractContext.tract]);
 
-      tractContext.setTract(tract);
-
-      const tractBounds: BBox = bbox(tract) as BBox;
-
-      const permitLayers = await getAllAPILayers(tractBounds);
-
-      const permits: Array<PermitLayer> = permitLayers
-        .map(({ category, data }) => {
-          const intersectingFeatures = data.features.filter((dataFeature) => {
-            return tract.features.some((tractFeature) => {
-              return (
-                intersect(
-                  tractFeature as GeoJSON.Feature<
-                    GeoJSON.Polygon | GeoJSON.MultiPolygon
-                  >,
-                  dataFeature as GeoJSON.Feature<
-                    GeoJSON.Polygon | GeoJSON.MultiPolygon
-                  >
-                ) !== null
-              );
-            });
-          });
-
-          if (intersectingFeatures.length > 0) {
-            const difficulty = calculateIntersectionPercentage(tract, data);
-            const visibility = true;
-            return {
-              category,
-              difficulty,
-              visibility,
-              data: featureCollection(intersectingFeatures),
-            };
-          }
-        })
-        .filter((permit): permit is PermitLayer => permit !== undefined);
-
-      // const permits: Array<PermitLayer> = permitLayers.map(
-      //   ({ category, data }) => {
-      //     const array = [];
-      //     data;
-      //     const difficulty = calculateIntersectionPercentage(tract, data);
-      //     const visibility = true;
-      //     return { category, difficulty, visibility, data };
-      //   }
-      // );
-
-      tractContext.setPermitLayers(permits);
-
-      const streets: Array<string> = await getStreetsByIds(tractContext.ids!);
-
-      tractContext.setStreets(streets);
-    };
-
-    fetchData();
-
-    return () => {
-      abort = true;
-    };
-  }, []);
-
-  const interactiveLayerIds = [
-    "tract",
-    "selectedFeature",
-    ...Object.values(Category),
-  ];
+  const interactiveLayerIds = ["tract", ...Object.values(Category)];
 
   const handleFeatureClick = (event: any) => {
     const features = tractContext.reactMapRef.current.queryRenderedFeatures(
@@ -176,7 +130,7 @@ const TractMap = () => {
         ref={tractContext.reactMapRef}
         mapLib={maplibregl}
         onMove={handleMove}
-        onLoad={handleMapLoad}
+        // onLoad={handleMapLoad}
         mapStyle="https://api.maptiler.com/maps/728b3d85-ec90-44fc-a523-4a82941afef2/style.json?key=NnjGcTCXK5QNqcvLXvVg"
         attributionControl={false}
         interactiveLayerIds={interactiveLayerIds}

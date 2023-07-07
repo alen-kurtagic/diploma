@@ -48,7 +48,7 @@ const getByIds = async (
     LEFT JOIN ${settlementTableName} USING (settlement_id)
     LEFT JOIN ${landusesTableName} USING (parcel_id)
     LEFT JOIN ${landuseTableName} USING (landuse_id)
-    WHERE parcel_id IN ('${ids.join(", ")}')
+    WHERE parcel_id IN ('${ids.join("', '")}')
   ),
   aggregated_landuse AS (
     SELECT parcel_id, json_agg(json_build_object('landuse', landuse, 'share', share, 'code', code)) as landuse_summary

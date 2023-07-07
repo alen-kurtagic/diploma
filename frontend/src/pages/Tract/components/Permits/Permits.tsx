@@ -19,7 +19,7 @@ const Permits = () => {
     <div className="permits">
       {filteredPermiters.map((permit) => (
         <Category
-          key={permit.data.features[0].properties!.id}
+          key={permit.category}
           category={permit.category}
           difficulty={permit.difficulty}
           visibility={permit.visibility}

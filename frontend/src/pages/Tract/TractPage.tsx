@@ -7,6 +7,7 @@ import { MapRef, ViewState } from "react-map-gl";
 import { useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./tract-page.sass";
+import pako from "pako";
 import Side from "./components/Side/Side";
 
 export const TractPageContext = createContext<TractPageState>({
@@ -36,7 +37,18 @@ export const TractPageContext = createContext<TractPageState>({
 function TractPage() {
   // Get "tract" parameter and pass it down to the TractMap
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
+  // Get the query string
+  const encodedB64 = location.search.substring(1);
+  // Decode from URL encoding and then from Base64
+  const decodedB64 = decodeURIComponent(encodedB64);
+  const compressedData = Uint8Array.from(atob(decodedB64), (c) =>
+    c.charCodeAt(0)
+  );
+  // Decompress the parameters
+  const decompressedParams = pako.inflate(compressedData, { to: "string" });
+
+  // Now, decompressedParams should be your original `ids` parameter
+  const params = new URLSearchParams(decompressedParams);
   const idsParam = params.get("ids");
   const ids: Array<string> | undefined = idsParam?.split(",");
 

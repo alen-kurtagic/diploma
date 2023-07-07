@@ -55,7 +55,6 @@ const Usage = () => {
     .forEach((category) => usageCategoryMap.set(category.hint, category));
 
   const uniqueUsageCategories = Array.from(usageCategoryMap.values());
-  console.log(uniqueUsageCategories);
   return (
     <div className="usages">
       {uniqueUsageCategories.map((usageCategory: any) => {
