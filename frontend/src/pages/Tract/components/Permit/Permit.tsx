@@ -4,7 +4,6 @@ import { useContext, useState } from "react";
 import { TractPageContext } from "../../TractPage";
 import { categoryMapping } from "src/types/permitEnums";
 import { PermitLayer } from "src/types/tractTypes";
-import { GeoJSONFeature } from "maplibre-gl";
 
 const Permit = ({ category, visibility, difficulty, data }: PermitLayer) => {
   const tractContext = useContext(TractPageContext);
@@ -12,6 +11,7 @@ const Permit = ({ category, visibility, difficulty, data }: PermitLayer) => {
   const { title, permits, image, color } = categoryMapping[category];
 
   const [opened, setOpened] = useState<boolean>(false);
+  const [isHovering, setHovering] = useState<boolean>(false);
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     setOpened(!opened);
@@ -56,20 +56,22 @@ const Permit = ({ category, visibility, difficulty, data }: PermitLayer) => {
       className={`permit-container ${opened && "opened"}`}
       onClick={handleClick}
       key={category}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
     >
       <div className="permit-header">
-        <img src={image}></img>
+        {/* <img className="permit-icon" src={image}></img> */}
         <div className="data">
           <p className="title">{title}</p>
-          <p className="subtitle">{permits.join(", ")}</p>
-          <Chart difficulty={difficulty} />
+          {/* <p className="subtitle">{permits.join(", ")}</p> */}
+          <Chart difficulty={difficulty} showText={isHovering} />
         </div>
         <img
           className="box"
           onClick={handleVisibilityClick}
           src={visibility ? "src/assets/ticked.svg" : "src/assets/unticked.svg"}
         ></img>
-      </div>
+        {/* </div>
       <div className="permit-content">
         <p className="permit-features-title">Objekti ({numberOfFeatures})</p>
         <div className="permit-features">
@@ -85,7 +87,7 @@ const Permit = ({ category, visibility, difficulty, data }: PermitLayer) => {
               <p>Objekt 1</p>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </div>
   );

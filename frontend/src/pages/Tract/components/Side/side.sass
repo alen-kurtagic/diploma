@@ -9,14 +9,27 @@
     min-width: 350px
     width: 25%
     float: left
+    overflow-y: auto
 
 
 .side-padding
-    padding: 25px
+    padding: 25px 25px 0px 25px 
 
-.section-title
+.side-padding:last-child *
+    padding-bottom: 0px
+
+
+.section
+    padding: 10px 0px
+
+.section .title
     color: $mediumgray
     font-size: 0.9rem
     line-height: 1.2
     font-weight: 500
-    margin: 0px 0px 15px 0px
+    margin: 0
+
+.section .content
+    padding: 15px 0px
+
+

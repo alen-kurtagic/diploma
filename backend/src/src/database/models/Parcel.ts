@@ -32,16 +32,37 @@ const getByBbox = async (
 const getByIds = async (
   ids: Array<number>
 ): Promise<FeatureCollection<any, GeoJsonProperties>> => {
-  const idsCondition = `gid = ANY('{${ids.join(",")}}'::int[]) `;
-
   const query = `
-  SELECT gid, ko_id, st_parcele, boniteta, settlement ST_AsGeoJSON((ST_Dump(geom_4326)).geom)::json AS geometry
-  FROM layers.${tableName}
-  JOIN codebook.settlement ON (ko_id = code)
-  WHERE 
-  ${idsCondition}
-`;
 
+  WITH test AS (
+    SELECT 
+      eid_parcel, 
+      gid, 
+      ko_id, 
+      st_parcele, 
+      boniteta, 
+      settlement, 
+      opis_sl, 
+      delez, 
+      sifra,
+      ST_AsGeoJSON((ST_Dump(geom_4326)).geom)::json AS geometry
+    FROM layers.${tableName}
+    LEFT JOIN codebook.settlement ON (ko_id = code)
+    LEFT JOIN layers.planned_usage USING (eid_parcel)
+    LEFT JOIN codebook.usage ON (vrsta_namenske_rabe_id = raba_id)
+    WHERE gid IN (${ids.join(",")})
+  ),
+  planned_usage_agg AS (
+    SELECT eid_parcel, json_agg(json_build_object('opis_sl', opis_sl, 'delez', delez, 'sifra', sifra)) as planned_usage
+    FROM test
+    GROUP BY eid_parcel
+  )
+  SELECT DISTINCT ON (eid_parcel) *
+  FROM test t
+  INNER JOIN planned_usage_agg pua USING (eid_parcel);
+  `;
+
+  console.log(query);
   return executeQuery(query);
 };
 
@@ -62,11 +83,13 @@ const executeQuery = async (
                   type: "Feature",
                   geometry: row.geometry,
                   properties: {
+                    eid_parcela: row.eid_parcela,
                     gid: row.gid,
                     settlement: row.settlement,
                     ko: row.ko,
                     st_parcele: row.st_parcele,
                     boniteta: row.boniteta,
+                    usage: row.planned_usage,
                   },
                 } as Feature<any, GeoJsonProperties>)
             );

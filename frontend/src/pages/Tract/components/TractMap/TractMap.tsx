@@ -23,7 +23,6 @@ import {
 } from "@turf/turf";
 import { getParcelsByIds } from "src/services/database/parcel";
 import { getStreetsByIds } from "src/services/database/street";
-import { getSettlementByCode } from "src/services/database/settlement";
 import { PermitLayer } from "src/types/tractTypes";
 import getAllAPILayers from "src/services/api/kingProstor/apiCaller";
 import PermitSource from "../PermitSource/PermitSource";
@@ -132,14 +131,6 @@ const TractMap = () => {
       // );
 
       tractContext.setPermitLayers(permits);
-
-      const codes: Array<number> = tract.features.map(
-        (feature) => feature.properties?.ko_id
-      );
-
-      const settlements: Array<string> = await getSettlementByCode(codes);
-
-      tractContext.setSettlements(settlements);
 
       const streets: Array<string> = await getStreetsByIds(tractContext.ids!);
 

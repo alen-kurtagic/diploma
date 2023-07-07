@@ -3,13 +3,14 @@ import "./chart.sass";
 const CHART_WIDTH = 50;
 const CHART_PARTS = 5;
 const COLORS = ["#A8DA81", "#A8DA81", "#FFF96B", "#F87045"];
-const TEXT = ["Brez težav", "Preprosto", "Zahtevno", "Izjemo zahtevno"];
+const TEXT = ["Brez težav", "Enostavno", "Zapleteno", "Zahtevno"];
 
 interface ChartProps {
   difficulty: number;
+  showText: boolean;
 }
 
-const Chart = ({ difficulty }: ChartProps) => {
+const Chart = ({ difficulty, showText = false }: ChartProps) => {
   // Scale to [0, CHART_PARTS]
   const scaledDifficulty = difficulty / (100 / CHART_PARTS);
 
@@ -32,14 +33,16 @@ const Chart = ({ difficulty }: ChartProps) => {
           }}
         ></div>
       </div>
-      <p
-        className="chart-text"
-        style={{
-          color: COLORS[roundedDifficulty - 1],
-        }}
-      >
-        {TEXT[roundedDifficulty - 1]}
-      </p>
+      {showText && (
+        <p
+          className="chart-text"
+          style={{
+            color: COLORS[roundedDifficulty - 1],
+          }}
+        >
+          {TEXT[roundedDifficulty - 1]}
+        </p>
+      )}
     </div>
   );
 };

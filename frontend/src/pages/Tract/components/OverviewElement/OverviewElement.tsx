@@ -8,6 +8,7 @@ interface OverviewElementProps {
   more?: string | undefined;
   unit?: string | undefined;
   hint: string;
+  hintColor?: string;
 }
 const OverviewElement = ({
   image,
@@ -15,6 +16,7 @@ const OverviewElement = ({
   more,
   unit = undefined,
   hint,
+  hintColor = "#C2C2C2",
 }: OverviewElementProps) => {
   const tractContext = useContext(TractPageContext);
 
@@ -28,12 +30,13 @@ const OverviewElement = ({
   if (!value) return <></>;
 
   return (
-    <div className="overview-element" onClick={() => toggleExpanded()}>
-      <img
-        src={image}
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
-      />
+    <div
+      className="overview-element"
+      onClick={() => toggleExpanded()}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
+      <img src={image} />
       <span>
         <p>
           {value ? value : "/"}
@@ -42,7 +45,16 @@ const OverviewElement = ({
         {/* {isExpanded && <p className="more">{more ? more : "/"}</p>} */}
       </span>
 
-      {isHovering && <div className="hint">{hint}</div>}
+      {isHovering && (
+        <div
+          className="hint"
+          style={{
+            backgroundColor: hintColor,
+          }}
+        >
+          {hint}
+        </div>
+      )}
     </div>
   );
 };

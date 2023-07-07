@@ -11,20 +11,18 @@ import Save from "../Save/Save";
 const Header = () => {
   const tractContext = useContext(TractPageContext);
 
-  console.log(tractContext.tract);
-  const settlementNames = tractContext.settlements;
-  const settlementNamesCapitalized = settlementNames.map((settlementName) =>
-    capitalizeFirstLetter(settlementName)
+  const settlementNames = tractContext.tract.features.map((feature) =>
+    capitalizeFirstLetter(feature.properties?.settlement)
   );
-  const settlementNamesAnd = replaceLastCommaWithAnd(
-    settlementNamesCapitalized.join(", ")
-  );
+  const uniqueSettlementNames = [...new Set(settlementNames)];
 
-  const settlementName: string = settlementNamesAnd;
+  const settlementNamesFormatted: string = replaceLastCommaWithAnd(
+    uniqueSettlementNames.join(", ")
+  );
 
   const streetNames = tractContext.streets;
 
-  const streetName = streetNames[0];
+  const streetName = streetNames[0] || "V divjini";
 
   const [expandedState, setExpandedState] = useState<"share" | "save" | null>(
     null
@@ -40,11 +38,8 @@ const Header = () => {
 
   return (
     <div className="header">
-      <h2 className="settlement">{settlementName}</h2>
+      <h2 className="settlement">{settlementNamesFormatted}</h2>
       <h3 className="street">{streetName}</h3>
-      {/* <div className="usage">
-        <img src="src/assets/wheat.svg" />
-      </div> */}
       <div className="actions">
         <div className="action" onClick={() => toggleSave()}>
           <img src="./src/assets/flag.svg" />
@@ -57,7 +52,7 @@ const Header = () => {
       </div>
       {expandedState == "share" && <Share />}
       {expandedState == "save" && (
-        <Save suggested={`${settlementName} - ${streetName}`} />
+        <Save suggested={`${settlementNamesFormatted} - ${streetName}`} />
       )}
     </div>
   );
