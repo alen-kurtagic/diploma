@@ -1,0 +1,74 @@
+@import "src/variables.sass"
+.popup
+    position: absolute
+    z-index: 1
+    background-color: $primaryColor
+    // height: 100px
+    right: 15px
+    top: 15px
+    border-radius: 7.5px
+    padding: 15px 
+    padding-bottom: 7px
+    // width: max-content
+    // max-width: 400px
+    width: 325px
+    transform: translateX(50%)
+    cursor: default
+
+
+.popup .close
+    position: absolute
+    right: 15px
+    top: 10px
+    cursor: pointer
+ 
+.popup .close img
+    widht: 24px
+    height: 24px
+
+.popup p
+    margin: 0
+    padding: 0
+
+.popup .title
+    font-weight: 500
+    font-size: 1rem
+    margin-bottom: 5px
+
+.popup .subtitle
+    color: #c2c2c2
+    font-weight: 500
+    font-size: 0.8rem
+    margin-bottom: 12px
+
+.popup .overview
+    gap: 5px
+
+.popup .overview .overview-item p
+    font-size: 0.8rem 
+        width: max-content
+
+.popup .overview .overview-item .hint 
+    font-size: 0.6rem !important
+    padding: 4px 4px
+    line-height: 1.2
+
+.popup .overview .overview-item img
+    width: 18px
+    height: 18px
+
+.popup .chart-container
+    margin-bottom: 15px
+
+.popup .overview-item
+    padding-right: 50px
+
+.popup .section
+    padding: 4px 0px
+
+.popup .section .title
+    font-size: 0.8rem
+
+
+.popup .section .content
+    padding: 7px 0px

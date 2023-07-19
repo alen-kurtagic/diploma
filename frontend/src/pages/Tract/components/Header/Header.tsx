@@ -22,7 +22,7 @@ const Header = () => {
 
   const streetNames = tractContext.streets;
 
-  const streetName = streetNames[0] || "V divjini";
+  const streetName = streetNames[0] || "/";
 
   const [expandedState, setExpandedState] = useState<"share" | "save" | null>(
     null
@@ -42,11 +42,11 @@ const Header = () => {
       <h3 className="street">{streetName}</h3>
       <div className="actions">
         <div className="action" onClick={() => toggleSave()}>
-          <img src="./src/assets/flag.svg" />
+          <img src="./src/assets/icons/flag.svg" />
           <p>Shrani</p>
         </div>
         <div className="action" onClick={() => toggleShare()}>
-          <img src="./src/assets/share.svg" />
+          <img src="./src/assets/icons/share.svg" />
           <p>Deli</p>
         </div>
       </div>

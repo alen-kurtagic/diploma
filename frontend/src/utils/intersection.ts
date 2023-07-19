@@ -1,6 +1,10 @@
 import { area, intersect } from "@turf/turf";
 import { featureEach } from "@turf/meta";
 
+const isPolygonType = (geometryType: string): boolean => {
+  return geometryType === "Polygon" || geometryType === "MultiPolygon";
+};
+
 const calculateIntersectionPercentage = (
   featureCollection1: GeoJSON.FeatureCollection,
   featureCollection2: GeoJSON.FeatureCollection
@@ -9,9 +13,9 @@ const calculateIntersectionPercentage = (
   let totalArea = 0;
 
   featureEach(featureCollection1, (feature1) => {
-    if (feature1.geometry.type !== "Polygon") {
+    if (!isPolygonType(feature1.geometry.type)) {
       throw new Error(
-        "All features in featureCollection1 must be of type Polygon"
+        "All features in featureCollection1 must be of type Polygon or MultiPolygon"
       );
     }
 
@@ -19,9 +23,9 @@ const calculateIntersectionPercentage = (
     totalArea += feature1Area;
 
     featureEach(featureCollection2, (feature2) => {
-      if (feature2.geometry.type !== "Polygon") {
+      if (!isPolygonType(feature2.geometry.type)) {
         throw new Error(
-          "All features in featureCollection2 must be of type Polygon"
+          "All features in featureCollection2 must be of type Polygon or MultiPolygon"
         );
       }
 
@@ -41,21 +45,5 @@ const calculateIntersectionPercentage = (
 
   return intersectionPercentage;
 };
-
-// const calculateIntersectionPercentage = (polygon1: any, polygon2: any) => {
-//   const intersectingPolygon = intersect(polygon1, polygon2);
-
-//   if (!intersectingPolygon) {
-//     // Polygons do not intersect
-//     return 0;
-//   }
-
-//   const intersectingArea = area(intersectingPolygon);
-//   const polygon1Area = area(polygon1);
-
-//   const intersectionPercentage = (intersectingArea / polygon1Area) * 100;
-
-//   return intersectionPercentage;
-// };
 
 export { calculateIntersectionPercentage };

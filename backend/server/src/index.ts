@@ -12,5 +12,5 @@ app.use(parcelsRoute);
 app.use(streetsRoute);
 
 app.listen(process.env.PORT || 3000, function () {
-  console.log("Server is listening on port 3000");
+  console.log("Parcelko server is listening on port 3000");
 });

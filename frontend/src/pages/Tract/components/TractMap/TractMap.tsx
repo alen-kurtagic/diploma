@@ -1,25 +1,20 @@
-import { useContext, useState, useEffect } from "react";
-import {
-  Map as ReactMap,
-  Source,
-  Layer,
-  ViewStateChangeEvent,
-  MapboxEvent,
-} from "react-map-gl";
+import { useContext, useState, useEffect, useCallback } from "react";
+import { Marker, Map as ReactMap, ViewStateChangeEvent } from "react-map-gl";
 import maplibregl from "maplibre-gl";
 import { TractPageContext } from "src/pages/Tract/TractPage";
 import bbox from "@turf/bbox";
 import "./tract-map.sass";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { intersect, BBox, featureCollection } from "@turf/turf";
+import { BBox } from "@turf/turf";
 import { getParcelsByIds } from "src/services/database/parcel";
 import { getStreetsByIds } from "src/services/database/street";
-import { PermitLayer } from "src/types/tractTypes";
-import getAllAPILayers from "src/services/api/kingProstor/apiCaller";
-import PermitSource from "../PermitSource/PermitSource";
-import { Category } from "src/types/permitEnums";
+import getAllAPILayers from "src/services/api/layers/apiCaller";
+import MapLayer, { LayerProps } from "../MapLayer/MapLayer";
 import { calculateIntersectionPercentage } from "src/utils/intersection";
+import Popup from "../Popup/Popup";
 import { useQuery } from "react-query";
+import { calculateArea } from "src/utils/surfaceArea";
+import { getLayerDataByName } from "src/types/permitEnums";
 
 // React functional component of the Mp
 const TractMap = () => {
@@ -36,9 +31,6 @@ const TractMap = () => {
       features: tractContext.tract.features,
     });
 
-    console.log("reading tract");
-    console.log(tractContext.tract);
-
     tractContext.reactMapRef.current.fitBounds(
       bounds as [number, number, number, number],
       {
@@ -47,7 +39,7 @@ const TractMap = () => {
     );
 
     tractContext.reactMapRef.current.once("zoomend", function () {
-      handleMaxBounds(bounds);
+      updateMaxBounds(bounds);
     });
   };
 
@@ -56,7 +48,7 @@ const TractMap = () => {
     tractContext.handleViewState(event.viewState);
   };
 
-  const handleMaxBounds = (bounds: BBox) => {
+  const updateMaxBounds = (bounds: BBox) => {
     const ratio = 10; // ratio that represents max bounds size to the tract size
 
     const lngDiff: number = bounds[2] - bounds[0]; // width
@@ -76,23 +68,67 @@ const TractMap = () => {
   const fetchTractData = async () => {
     const tract = await getParcelsByIds(tractContext.ids!);
     const tractBounds: BBox = bbox(tract) as BBox;
-    const permitLayers = await getAllAPILayers(tractBounds);
+    const layers: LayerProps[] = await getAllAPILayers(tractBounds);
+
     const streets: Array<string> = await getStreetsByIds(tractContext.ids!);
 
-    return { tract, permitLayers, streets };
+    return { tract, layers, streets };
   };
 
-  const { data, isLoading, isError } = useQuery("tractData", fetchTractData);
+  const { data, isLoading, isError } = useQuery("tractMapData", fetchTractData);
 
   useEffect(() => {
     if (isLoading || isError || !data) return;
-    console.log("writing tract");
-    console.log(data.tract);
-    // Note: You may need to modify the data as needed before setting the state.
-    tractContext.setTract(data.tract);
-    // tractContext.setPermitLayers(data.permitLayers);
-    tractContext.setStreets(data.streets);
 
+    tractContext.setTract(data.tract);
+    const tractLayer: LayerProps = {
+      name: "Parcela",
+      color: "#0D99FF",
+      opacity: 1,
+      visibility: true,
+      data: data.tract,
+    };
+    const layersFromAPI = data.layers
+      .map((layer: LayerProps) => {
+        layer.data.features = layer.data.features
+          .map((feature: GeoJSON.Feature) => {
+            const intersectionPercent = calculateIntersectionPercentage(
+              data.tract,
+              {
+                type: "FeatureCollection",
+                features: [feature],
+              }
+            );
+
+            if (intersectionPercent === 0 || Number.isNaN(intersectionPercent))
+              return null;
+
+            return feature;
+          })
+          .filter((feature): feature is GeoJSON.Feature => feature !== null);
+
+        const surfaceArea = calculateArea(layer.data);
+        const intersectionPercent = calculateIntersectionPercentage(
+          data.tract,
+          layer.data
+        );
+
+        if (intersectionPercent === 0 || Number.isNaN(intersectionPercent))
+          return null;
+        return {
+          name: layer.name,
+          color: layer.color,
+          difficulty: intersectionPercent,
+          visibility: true,
+          data: layer.data,
+          surfaceArea: surfaceArea, // Include surfaceArea in the returned object
+        };
+      })
+      .filter((layer) => layer !== null)
+      .sort((a: any, b: any) => a.surfaceArea - b.surfaceArea); // Order in ascending order
+
+    tractContext.setLayers([tractLayer, ...layersFromAPI]);
+    tractContext.setStreets(data.streets);
     tractContext.setLoading(false);
   }, [data, isLoading, isError]);
 
@@ -102,22 +138,78 @@ const TractMap = () => {
     }
   }, [tractContext.tract]);
 
-  const interactiveLayerIds = ["tract", ...Object.values(Category)];
+  const interactiveLayerIds = tractContext.layers.map((layer) => layer.name);
+
+  const handlePopupClose = (longitude: number, latitude: number) => {
+    tractContext.setPopups((prevPopups: any) =>
+      prevPopups.filter(
+        (popup: any) =>
+          !(popup.longitude === longitude && popup.latitude === latitude)
+      )
+    );
+  };
 
   const handleFeatureClick = (event: any) => {
-    const features = tractContext.reactMapRef.current.queryRenderedFeatures(
-      event.point
-    );
-    if (features.length > 0) {
+    const map = tractContext.reactMapRef.current;
+    const features = map.queryRenderedFeatures(event.point);
+
+    for (let i = 0; i < features.length; i++) {
+      const feature = features[i];
+      // Check if the layer is visible and not having opacity 0
+      if (feature.layer?.paint?.["fill-extrusion-opacity"] > 0) {
+        console.log("First visible feature:", feature);
+
+        const newPopup = {
+          name: feature.layer.id,
+          layerData: getLayerDataByName(feature.layer.id),
+          subtitle: "/",
+          color: feature.layer.paint["fill-extrusion-color"],
+          properties: feature.properties,
+          feature: feature,
+          longitude: event.lngLat.lng,
+          latitude: event.lngLat.lat,
+        };
+
+        // If shift key was pressed, add to the existing popups. Otherwise, replace them.
+        if (event.originalEvent.shiftKey) {
+          if (tractContext.popups.length > 2) return;
+
+          const existingPopup = tractContext.popups.find(
+            (popup: any) =>
+              JSON.stringify(popup.properties) ===
+              JSON.stringify(newPopup.properties)
+          );
+
+          if (!existingPopup) {
+            tractContext.setPopups((prevPopups: any) => [
+              ...prevPopups,
+              newPopup,
+            ]);
+          }
+        } else {
+          tractContext.setPopups([newPopup]);
+        }
+
+        break;
+      }
     }
   };
 
-  const permitSources = tractContext.permitLayers.map(
-    ({ category, visibility, data }, index) => {
-      return PermitSource({
-        category: category,
+  const visibilityArray = tractContext.layers
+    .map(({ visibility }) => visibility)
+    .reverse();
+  const mapLayers = tractContext.layers.map(
+    ({ name, color, opacity, visibility, data }, index) => {
+      const height =
+        5 *
+        visibilityArray.slice(0, visibilityArray.length - index).filter(Boolean)
+          .length;
+      return MapLayer({
+        name: name,
+        color: color,
+        opacity: opacity,
         visibility: visibility,
-        height: index + 1,
+        height: height,
         data: data,
       });
     }
@@ -138,23 +230,21 @@ const TractMap = () => {
         maxBounds={maxBounds}
         onClick={handleFeatureClick}
       >
-        <Source type="geojson" data={tractContext.tract} tolerance={0}>
-          <Layer
-            id="tract"
-            type="fill-extrusion"
-            paint={{
-              "fill-extrusion-color": "#0D99FF",
-              "fill-extrusion-height": 5,
-              "fill-extrusion-base": 0,
-            }}
-            filter={[
-              "any",
-              ["in", ["get", "parcel_id"], ["literal", tractContext.ids]],
-            ]}
-            //beforeId="properties"
-          />
-        </Source>
-        {permitSources}
+        {mapLayers}
+        {tractContext.popups.map((popup: any, index: number) => (
+          <Marker
+            key={index}
+            longitude={popup.longitude}
+            latitude={popup.latitude}
+          >
+            <Popup
+              name={popup.name}
+              layerData={popup.layerData}
+              feature={popup.feature}
+              onClose={() => handlePopupClose(popup.longitude, popup.latitude)}
+            />
+          </Marker>
+        ))}
       </ReactMap>
     </div>
   );

@@ -1,6 +1,9 @@
 import { pool } from "../connection";
 import { Feature, FeatureCollection, GeoJsonProperties } from "geojson";
 import { QueryResult, QueryResultRow } from "pg";
+import { Client } from "pg";
+import JSONStream from "jsonstream";
+import QueryStream from "pg-query-stream";
 
 const parcelsTableName = "data.parcels";
 const landusesTableName = "data.landuses";
@@ -66,36 +69,51 @@ const getByIds = async (
 const executeQuery = async (
   query: string
 ): Promise<FeatureCollection<any, GeoJsonProperties>> => {
+  // Create a new client instance
+  const client = new Client();
+  await client.connect();
+
+  // Create a query stream
+  const queryStream = new QueryStream(query);
+  const stream = client.query(queryStream);
+
+  // Pipe the query stream into JSONStream for parsing
+  const jsonStream = stream.pipe(JSONStream.parse("*"));
+
   return new Promise<FeatureCollection<any, GeoJsonProperties>>(
     (resolve, reject) => {
-      pool.query<QueryResultRow>(
-        query,
-        (error: Error, result: QueryResult<QueryResultRow>) => {
-          if (error) {
-            reject(error);
-          } else {
-            const features = result.rows.map(
-              (row) =>
-                ({
-                  type: "Feature",
-                  geometry: row.geometry,
-                  properties: {
-                    parcel_id: row.parcel_id,
-                    quality: row.quality,
-                    settlement: row.settlement,
-                    landuse: row.landuse_summary,
-                  },
-                } as Feature<any, GeoJsonProperties>)
-            );
+      const features: any = [];
 
-            const featureCollectionObject: FeatureCollection<any> = {
-              type: "FeatureCollection",
-              features: features,
-            };
-            resolve(featureCollectionObject);
-          }
-        }
-      );
+      jsonStream.on("data", (row: any) => {
+        features.push({
+          type: "Feature",
+          geometry: row.geometry,
+          properties: {
+            parcel_id: row.parcel_id,
+            quality: row.quality,
+            settlement: row.settlement,
+            landuse: row.landuse_summary,
+          },
+        });
+      });
+
+      jsonStream.on("end", () => {
+        const featureCollectionObject: FeatureCollection<any> = {
+          type: "FeatureCollection",
+          features: features,
+        };
+        resolve(featureCollectionObject);
+
+        // Don't forget to end your client connection
+        client.end();
+      });
+
+      jsonStream.on("error", (err: any) => {
+        reject(err);
+
+        // Don't forget to end your client connection
+        client.end();
+      });
     }
   );
 };

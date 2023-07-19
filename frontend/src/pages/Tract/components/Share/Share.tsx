@@ -13,7 +13,7 @@ const Share = () => {
     <div className="share">
       <input readOnly={true} value={window.location.href} />
       <img
-        src="src/assets/copy.svg"
+        src="src/assets/icons/copy.svg"
         className={rotate ? "rotate" : ""}
         onClick={handleCopy}
         onAnimationEnd={() => setRotation(false)}

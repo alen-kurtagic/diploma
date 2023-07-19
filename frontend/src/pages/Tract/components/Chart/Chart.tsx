@@ -1,18 +1,18 @@
 import "./chart.sass";
 
-const CHART_WIDTH = 50;
+const CHART_WIDTH = 55;
 const CHART_PARTS = 5;
 const COLORS = ["#A8DA81", "#A8DA81", "#FFF96B", "#F87045"];
-const TEXT = ["Brez težav", "Enostavno", "Zapleteno", "Zahtevno"];
+const TEXT = ["Brez težav", "Enostavno", "Zapleteno", "Problematično"];
 
 interface ChartProps {
-  difficulty: number;
+  percentage: number;
   showText: boolean;
 }
 
-const Chart = ({ difficulty, showText = false }: ChartProps) => {
+const Chart = ({ percentage, showText = false }: ChartProps) => {
   // Scale to [0, CHART_PARTS]
-  const scaledDifficulty = difficulty / (100 / CHART_PARTS);
+  const scaledDifficulty = percentage / (100 / CHART_PARTS);
 
   // Round to nearest integer and ensure the result is between 1 and CHART_PARTS - 1
   const roundedDifficulty = Math.min(
@@ -30,6 +30,9 @@ const Chart = ({ difficulty, showText = false }: ChartProps) => {
               CHART_WIDTH / CHART_PARTS
             }px)`,
             backgroundColor: COLORS[roundedDifficulty - 1],
+            // showText
+            //   ? COLORS[roundedDifficulty - 1]
+            //   : "#858585",
           }}
         ></div>
       </div>

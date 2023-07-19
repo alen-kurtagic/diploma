@@ -1,6 +1,6 @@
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { TractPageContext } from "src/pages/Tract/TractPage";
-import OverviewElement from "../OverviewElement/OverviewElement";
+import OverviewItem from "../OverviewItem/OverviewItem";
 import { calculateArea, formatArea } from "src/utils/surfaceArea";
 import "./overview.sass";
 
@@ -10,64 +10,70 @@ const Overview = () => {
   // Tract
   const amount: number = tractContext.tract.features.length ?? 0;
 
-  const ids: string | undefined = tractContext.tract.features
-    .map((feature) => feature.id)
-    .join(", ");
-  //   const ids: string | undefined = tractContext.ids?.join(", ");
+  const ids: string = useMemo(
+    () => tractContext.tract.features.map((feature) => feature.id).join(", "),
+    [tractContext.tract.features]
+  );
 
   // Area
-  let areaSum: number = 0;
-  let areaEach: Array<string> = [];
+  const { areaSum, areas } = useMemo(() => {
+    let areaSum: number = 0;
+    let areaEach: Array<string> = [];
 
-  tractContext.tract.features.forEach((feature) => {
-    const featureCollection: GeoJSON.FeatureCollection = {
-      type: "FeatureCollection",
-      features: [feature],
-    };
+    tractContext.tract.features.forEach((feature) => {
+      const featureCollection: GeoJSON.FeatureCollection = {
+        type: "FeatureCollection",
+        features: [feature],
+      };
 
-    const calculatedArea = calculateArea(featureCollection);
+      const calculatedArea = calculateArea(featureCollection);
 
-    const { unit, area } = formatArea(calculatedArea);
+      const { unit, area } = formatArea(calculatedArea);
 
-    areaSum += calculatedArea;
-    areaEach.push(`${area} ${unit}`);
-  });
+      areaSum += calculatedArea;
+      areaEach.push(`${area} ${unit}`);
+    });
+
+    const areas = areaEach.join(" + ");
+
+    return { areaSum, areas };
+  }, [tractContext.tract.features]);
 
   const { unit, area } = formatArea(areaSum);
-  const areas = areaEach.join(" + ");
 
   // Rating
-  let ratingSum: number = 0;
-  let ratingEach: Array<string> = [];
+  const { averageRating, ratings } = useMemo(() => {
+    let ratingSum: number = 0;
+    let ratingEach: Array<string> = [];
 
-  tractContext.tract.features.forEach((feature) => {
-    const rating = feature.properties?.boniteta;
-    ratingSum += rating;
-    ratingEach.push(rating);
-  });
+    tractContext.tract.features.forEach((feature) => {
+      const rating = feature.properties?.boniteta;
+      ratingSum += rating;
+      ratingEach.push(rating);
+    });
 
-  const averageRating = ratingSum / tractContext.tract.features.length;
-  const ratings = ratingEach.join(", ");
+    const averageRating = ratingSum / tractContext.tract.features.length;
+    const ratings = ratingEach.join(", ");
+
+    return { averageRating, ratings };
+  }, [tractContext.tract.features]);
 
   return (
     <div className="overview">
-      <OverviewElement
-        image="src/assets/home.svg"
+      <OverviewItem
+        image="src/assets/icons/home.svg"
         value={amount}
-        more={ids}
         hint="Parcela"
       />
-      <OverviewElement
-        image="src/assets/area.svg"
+      <OverviewItem
+        image="src/assets/icons/area.svg"
         value={area}
         unit={unit}
-        more={areas}
         hint="Površina"
       />
-      <OverviewElement
-        image="src/assets/rating.svg"
+      <OverviewItem
+        image="src/assets/icons/quality.svg"
         value={averageRating}
-        more={ratings}
         hint="Boniteta"
       />
     </div>

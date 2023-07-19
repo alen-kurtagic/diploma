@@ -10,7 +10,7 @@ const Navigation = () => {
   return (
     <div className="navigation">
       <div className="back-container" onClick={handleClick}>
-        <img src="src/assets/back.svg"></img>
+        <img src="src/assets/icons/back.svg"></img>
       </div>
     </div>
   );

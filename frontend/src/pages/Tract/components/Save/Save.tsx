@@ -20,7 +20,7 @@ const Save = ({ suggested }: { suggested: string }) => {
     <div className="save">
       <input readOnly={false} value={inputValue} onChange={handleInputChange} />
       <img
-        src="src/assets/save.svg"
+        src="src/assets/icons/save.svg"
         className={rotate ? "rotate" : ""}
         onClick={handleSave}
         onAnimationEnd={() => setRotation(false)}

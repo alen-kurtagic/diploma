@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
-import "./filter.sass";
 import { TractPageContext } from "../../TractPage";
+import "./filter.sass";
 
 const Filter = () => {
   const tractContext = useContext(TractPageContext);
@@ -37,10 +37,10 @@ const Filter = () => {
         onBlur={handleBlur}
         value={inputValue}
       ></input>
-      <img src="src/assets/search.svg" className="search-icon"></img>
+      <img src="src/assets/icons/search.svg" className="search-icon"></img>
       {isFocused && tractContext.filter.length > 0 && (
         <img
-          src="src/assets/x.svg"
+          src="src/assets/icons/x.svg"
           className="clear-input"
           onPointerDown={handleClear}
         ></img>

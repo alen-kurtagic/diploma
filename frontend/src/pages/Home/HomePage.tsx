@@ -1,97 +1,88 @@
 import { useState, createContext, useRef, useCallback, useEffect } from "react";
 import { MapRef, ViewState } from "react-map-gl";
+import { Dispatch, RefObject, SetStateAction } from "react";
 import proj4 from "src/utils/projectionDefinitions";
-import Map from "./components/Map/Map";
-import Confirm from "./components/Confirm/Confirm";
+import InteractiveMap from "./components/InteractiveMap/InteractiveMap";
+import ConfirmButton from "./components/ConfirmButton/ConfirmButton";
+import SearchBar from "./components/SearchBar/SearchBar";
 import Loading from "src/components/Loading/Loading";
-import { HomePageState, goToParams } from "src/types/homeTypes";
-import Search from "./components/Search/Search";
-import { APISuggestion } from "src/types/apiTypes";
+import { SuggestionValues } from "src/services/api/suggestions/suggestion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./home-page.sass";
 
-// Context object that will be used to share the state used
-// in children of this Component.
-export const AppContext = createContext<HomePageState>({
-  viewState: {},
-  handleViewState: (newViewState: Partial<ViewState>) => {},
-  goToLocation: ({ location }: { location: APISuggestion }) => {},
-  reactMapRef: null,
-  inputRef: { current: null },
-  selectedFeatures: [],
-  setSelectedFeatures: () => {},
-  shiftPressed: { current: null },
-  loading: true,
-  setLoading: () => {},
-});
+interface HomePageState {
+  viewState: any;
+  handleViewState: (newViewState: Partial<ViewState>) => void;
+  goToLocation: ({ location }: { location: SuggestionValues }) => void;
+  // reactMapRef: MapRef | null,
+  reactMapRef: any;
+  inputRef: RefObject<HTMLInputElement>;
+  selectedFeatures: Array<any>;
+  setSelectedFeatures: Dispatch<SetStateAction<any>>;
+  shiftPressed: RefObject<boolean>;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+}
 
-function HomePage() {
-  // Create a reference to Maplibre map instance using useRef hook.
+// "goTo" function.
+interface goToParams {
+  box: [number, number, number, number];
+  maxZoom: number;
+  duration: number;
+}
+
+const createIntitialHomePageState = () => {
+  return {
+    viewState: {},
+    handleViewState: (newViewState: Partial<ViewState>) => {},
+    goToLocation: ({ location }: { location: SuggestionValues }) => {},
+    reactMapRef: null,
+    inputRef: { current: null },
+    selectedFeatures: [],
+    setSelectedFeatures: () => {},
+    shiftPressed: { current: null },
+    loading: true,
+    setLoading: () => {},
+  };
+};
+
+const HomeContext = createContext<HomePageState>(createIntitialHomePageState());
+
+const HomePage = () => {
   const reactMapRef = useRef<MapRef>(null);
-
   const [loading, setLoading] = useState(true);
-
-  // Create a reference to Search component input element, to track user input
-  // for suggestions related components.
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Create a state of currently selected features to change the color of
-  // Confirm component button if there are any selected.
   const [selectedFeatures, setSelectedFeatures] = useState<Array<any>>([]);
-
-  let shiftPressed = useRef<boolean>(false);
-
-  // Partial is a utility type that makes all properties of a given type
-  //  optional and not neccesseraly required.
+  const shiftPressed = useRef<boolean>(false);
   const [viewState, setViewState] = useState<Partial<ViewState>>({
     latitude: 46.1491664,
     longitude: 14.9860106,
     zoom: 7,
   });
 
-  // Function that globally handles "keydown" events.
-  const handleKeydown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      setSelectedFeatures([]);
-    }
-    if (event.key == "Shift") {
-      shiftPressed.current = true;
-    }
-  };
-
-  // Function that globally handles "keyup" events.
-  const handleKeyUp = (event: KeyboardEvent) => {
-    if (event.key == "Shift") {
-      shiftPressed.current = false;
-    }
-  };
-
-  // Add global event listeners for "keydown" and "keyup" events to the document,
-  // and removfe them when the component unmounts.
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeydown);
-    document.addEventListener("keyup", handleKeyUp);
-    return () => {
-      document.removeEventListener("keydown", handleKeydown);
-      document.removeEventListener("keyup", handleKeyUp);
-    };
+  // handlers and callbacks
+  const handleKeydown = useCallback((event: KeyboardEvent) => {
+    if (event.key === "Escape") setSelectedFeatures([]);
+    if (event.key == "Shift") shiftPressed.current = true;
   }, []);
 
-  const handleViewState = (newViewState: Partial<ViewState>) => {
-    setViewState({ ...viewState, ...newViewState });
-  };
+  const handleKeyUp = useCallback((event: KeyboardEvent) => {
+    if (event.key == "Shift") shiftPressed.current = false;
+  }, []);
 
-  // Memoized function that takes location's boundary box and calls the
-  // "goTo" function.
+  const handleViewState = useCallback((newViewState: Partial<ViewState>) => {
+    setViewState((prevViewState) => ({ ...prevViewState, ...newViewState }));
+  }, []);
+
   const goToLocation = useCallback(
-    ({ location }: { location: APISuggestion }) => {
+    ({ location }: { location: SuggestionValues }) => {
       const point1 = proj4("EPSG:3794", "EPSG:3857", [
-        location.x1,
-        location.y1,
+        location.boundingBox.x1,
+        location.boundingBox.y1,
       ]);
       const point2 = proj4("EPSG:3794", "EPSG:3857", [
-        location.x2,
-        location.y2,
+        location.boundingBox.x2,
+        location.boundingBox.y2,
       ]);
       const box: [number, number, number, number] = [
         point1[0],
@@ -99,25 +90,28 @@ function HomePage() {
         point2[0],
         point2[1],
       ];
-      goTo({ box: box, maxZoom: 18, duration: 2000 });
+      goTo({ box, maxZoom: 18, duration: 2000 });
     },
     []
   );
-  // Memoized function that animates the transition to a certain boundary box.
+
   const goTo = useCallback(({ box, maxZoom, duration }: goToParams) => {
-    reactMapRef.current?.fitBounds(box, {
-      maxZoom: maxZoom,
-      duration: duration,
-    });
+    reactMapRef.current?.fitBounds(box, { maxZoom, duration });
   }, []);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeydown);
+    document.addEventListener("keyup", handleKeyUp);
+    return () => {
+      document.removeEventListener("keydown", handleKeydown);
+      document.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [handleKeydown, handleKeyUp]);
 
   const selected: boolean = selectedFeatures.length > 0;
 
   return (
-    // Provider component that provides viewState, handleViewState, and
-    // goToLocation properties to all descendants of this component
-    // that consume the App context.
-    <AppContext.Provider
+    <HomeContext.Provider
       value={{
         viewState,
         handleViewState,
@@ -133,12 +127,14 @@ function HomePage() {
     >
       <div className="home-page">
         {loading && <Loading />}
-        <Search></Search>
-        <Map></Map>
-        {selected && <Confirm></Confirm>}
+        <SearchBar />
+        <InteractiveMap />
+        {selected && <ConfirmButton />}
       </div>
-    </AppContext.Provider>
+    </HomeContext.Provider>
   );
-}
+};
 
 export default HomePage;
+
+export { HomeContext };
