@@ -34,12 +34,12 @@ function calculateArea(featureCollection: GeoJSON.FeatureCollection): number {
 }
 
 function formatArea(areaInSquareMeters: number) {
-  const areaInSquareKilometers = areaInSquareMeters / 10000;
-  const unit = areaInSquareKilometers < 0.1 ? "m²" : "ha";
+  const areaInSquareHectares = areaInSquareMeters / 10000;
+  const unit = areaInSquareHectares < 0.1 ? "m²" : "ha";
   const area =
-    areaInSquareKilometers < 0.1
+    areaInSquareHectares < 0.1
       ? areaInSquareMeters.toFixed(0)
-      : areaInSquareKilometers.toFixed(1);
+      : areaInSquareHectares.toFixed(2).replace(/(\.\d)0$/, "$1");
 
   return {
     unit: unit,

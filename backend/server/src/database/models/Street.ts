@@ -22,7 +22,6 @@ const getStreetByIds = async (ids: Array<string>): Promise<Array<string>> => {
     ORDER BY distance ASC 
     LIMIT 4
   `;
-  console.log(query);
 
   return new Promise<Array<string>>((resolve, reject) => {
     pool.query<QueryResultRow>(

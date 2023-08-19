@@ -4,6 +4,7 @@ import { QueryResult, QueryResultRow } from "pg";
 import { Client } from "pg";
 import JSONStream from "jsonstream";
 import QueryStream from "pg-query-stream";
+import { DB_CONFIG } from "../../config/db";
 
 const parcelsTableName = "data.parcels";
 const landusesTableName = "data.landuses";
@@ -66,25 +67,85 @@ const getByIds = async (
   return executeQuery(query);
 };
 
+const getNeighboringParcels = async (
+  ids: Array<string>
+): Promise<FeatureCollection<any, GeoJsonProperties>> => {
+  const query = `
+  WITH parcels_data AS (
+    SELECT
+    parcels.parcel_id,
+    parcels.quality,
+    settlement.settlement,
+    landuses.share,
+    landuse.landuse,
+    landuse.code,
+    parcels.geom_4326
+    FROM data.parcels
+    LEFT JOIN codebook.settlement USING (settlement_id)
+    LEFT JOIN data.landuses USING (parcel_id)
+    LEFT JOIN codebook.landuse USING (landuse_id)
+    WHERE parcel_id IN ('${ids.join("', '")}')
+),
+neighboring_parcels AS (
+    SELECT DISTINCT 
+    parcels.parcel_id,
+    parcels.quality,
+    settlement.settlement,
+    landuses.share,
+    landuse.landuse,
+    landuse.code,
+    parcels.geom_4326
+    FROM data.parcels
+    LEFT JOIN codebook.settlement USING (settlement_id)
+    LEFT JOIN data.landuses USING (parcel_id)
+    LEFT JOIN codebook.landuse USING (landuse_id)
+    JOIN parcels_data ON ST_Touches(parcels_data.geom_4326, parcels.geom_4326)
+    WHERE parcels.parcel_id NOT IN ('${ids.join("', '")}')
+),
+aggregated_landuse AS (
+    SELECT parcel_id, json_agg(json_build_object('landuse', landuse, 'share', share, 'code', code)) as landuse_summary
+    FROM neighboring_parcels
+    GROUP BY parcel_id
+)
+SELECT DISTINCT ON (parcel_id) 
+    neighboring_parcels.parcel_id,
+    neighboring_parcels.quality,
+    neighboring_parcels.settlement,
+    neighboring_parcels.share,
+    neighboring_parcels.landuse,
+    neighboring_parcels.code,
+    ST_AsGeoJSON(neighboring_parcels.geom_4326)::json AS geometry,
+    aggregated_landuse.landuse_summary
+FROM neighboring_parcels
+INNER JOIN aggregated_landuse USING (parcel_id);
+  `;
+
+  return executeQuery(query);
+};
+
 const executeQuery = async (
   query: string
 ): Promise<FeatureCollection<any, GeoJsonProperties>> => {
   // Create a new client instance
-  const client = new Client();
-  await client.connect();
+  const client = new Client(DB_CONFIG);
+  try {
+    await client.connect();
+  } catch (err) {
+    console.error("Error connecting to the database:", err);
+  }
 
   // Create a query stream
   const queryStream = new QueryStream(query);
   const stream = client.query(queryStream);
 
   // Pipe the query stream into JSONStream for parsing
-  const jsonStream = stream.pipe(JSONStream.parse("*"));
+  // const jsonStream = stream.pipe(JSONStream.parse("*"));
 
   return new Promise<FeatureCollection<any, GeoJsonProperties>>(
     (resolve, reject) => {
       const features: any = [];
 
-      jsonStream.on("data", (row: any) => {
+      stream.on("data", (row: any) => {
         features.push({
           type: "Feature",
           geometry: row.geometry,
@@ -97,7 +158,7 @@ const executeQuery = async (
         });
       });
 
-      jsonStream.on("end", () => {
+      stream.on("end", () => {
         const featureCollectionObject: FeatureCollection<any> = {
           type: "FeatureCollection",
           features: features,
@@ -108,7 +169,7 @@ const executeQuery = async (
         client.end();
       });
 
-      jsonStream.on("error", (err: any) => {
+      stream.on("error", (err: any) => {
         reject(err);
 
         // Don't forget to end your client connection
@@ -118,4 +179,4 @@ const executeQuery = async (
   );
 };
 
-export { getByBbox, getByIds, parcelsTableName };
+export { getByBbox, getByIds, getNeighboringParcels, parcelsTableName };

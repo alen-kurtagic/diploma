@@ -1,6 +1,6 @@
-function capitalizeFirstLetter(str: string): string {
+function capitalizeFirstLetter(str?: string): string {
   if (!str) return "/";
-  const lowercase: string = str.toLowerCase();
+  const lowercase: string = str.toString().toLowerCase();
   return lowercase.charAt(0).toUpperCase() + lowercase.slice(1);
 }
 

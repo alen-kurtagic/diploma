@@ -1,8 +1,9 @@
 import { useContext, useMemo } from "react";
 import { TractPageContext } from "src/pages/Tract/TractPage";
-import OverviewItem from "../OverviewItem/OverviewItem";
+import OverviewItem from "../../OverviewItem/OverviewItem";
 import { calculateArea, formatArea } from "src/utils/surfaceArea";
 import "./overview.sass";
+import { calculateCombinedValue } from "src/utils/value";
 
 const Overview = () => {
   const tractContext = useContext(TractPageContext);
@@ -42,20 +43,18 @@ const Overview = () => {
   const { unit, area } = formatArea(areaSum);
 
   // Rating
-  const { averageRating, ratings } = useMemo(() => {
-    let ratingSum: number = 0;
-    let ratingEach: Array<string> = [];
+  const { averageRating } = useMemo(() => {
+    const ratings = tractContext.tract.features.map(
+      (feature) => feature.properties?.quality
+    );
 
-    tractContext.tract.features.forEach((feature) => {
-      const rating = feature.properties?.boniteta;
-      ratingSum += rating;
-      ratingEach.push(rating);
-    });
+    if (ratings.includes(null) || ratings.includes(undefined)) {
+      return { averageRating: undefined };
+    }
 
-    const averageRating = ratingSum / tractContext.tract.features.length;
-    const ratings = ratingEach.join(", ");
+    const ratingSum = ratings.reduce((acc, rating) => acc + rating, 0);
 
-    return { averageRating, ratings };
+    return { averageRating: ratingSum / ratings.length };
   }, [tractContext.tract.features]);
 
   return (
@@ -73,7 +72,7 @@ const Overview = () => {
       />
       <OverviewItem
         image="src/assets/icons/quality.svg"
-        value={averageRating}
+        value={averageRating ? averageRating.toFixed(0) : undefined}
         hint="Boniteta"
       />
     </div>

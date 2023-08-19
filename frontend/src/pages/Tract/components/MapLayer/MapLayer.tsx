@@ -24,9 +24,7 @@ const MapLayer = ({
 }: LayerProps) => {
   const tractContext = useContext(TractPageContext);
 
-  console.log(name);
   const layerData = getLayerDataByName(name);
-  console.log(layerData);
 
   // Get an array of the IDs of the features in popups
   const selectedFeatureIds = tractContext.popups.map(

@@ -19,8 +19,9 @@ const getBrownBear = async (bbox: BBox) => {
   const layerName = LayerName.BrownBear;
   const name: string = "Rjavi medved";
   const data = await makeTransformedAPIRequest(
-    "https://king2.geosx.io/arso/_sx1/sxtables/sxid_arso_d96_zivlj_prost_rjav_medveda/data/.json?filter=OBMOCJE= 1a, 1b",
-    bbox
+    "https://king2.geosx.io/arso/_sx1/sxtables/sxid_arso_d96_zivlj_prost_rjav_medveda/data/.json",
+    bbox,
+    "OBMOCJE IN ('1a', '1b')"
   );
   return { name: layerName, data: data };
 };

@@ -7,7 +7,7 @@ const getRoads = async (bbox: BBox): Promise<LayerProps[]> => {
   const waterLayers: LayerProps[] = [
     await getNationalRoads(bbox),
     await getLocalRoads(bbox),
-    await getRailways(bbox),
+    // await getRailways(bbox),
   ].map((waterLayer: any) => {
     waterLayer.opinion = "Mnenje za gradnjo z vidika varovanja javnih cest";
     ("Direkcija RDirekcija RS za infrastrukturo, Družba za avtoceste v Republiki Sloveniji");
@@ -37,13 +37,4 @@ const getLocalRoads = async (bbox: BBox): Promise<LayerProps> => {
   return { name: layerName, data: data };
 };
 
-const getRailways = async (bbox: BBox): Promise<LayerProps> => {
-  const layerName = LayerName.Railways;
-  const name: string = "Državne železnice";
-  const data = await makeTransformedAPIRequest(
-    "https://king2.geosx.io/drsi/_sx1/sxtables/sxid_drsi_drz_zeleznice_d96/data/.json",
-    bbox
-  );
-  return { name: layerName, data: data };
-};
 export { getRoads };

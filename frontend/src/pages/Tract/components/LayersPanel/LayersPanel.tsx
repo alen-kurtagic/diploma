@@ -22,7 +22,11 @@ const LayersPanel = () => {
             key={layer.name}
             layerData={layerData}
             name={layer.name}
-            difficulty={layer.difficulty!}
+            difficulty={
+              layer.difficulty != null && layerData.weight != null
+                ? layer.difficulty * layerData.weight
+                : null
+            }
             visibility={layer.visibility!}
           />
         );

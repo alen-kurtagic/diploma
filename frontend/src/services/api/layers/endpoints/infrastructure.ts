@@ -6,14 +6,14 @@ import { LayerProps } from "src/pages/Tract/components/MapLayer/MapLayer";
 const getInfrastructure = async (bbox: BBox): Promise<LayerProps[]> => {
   const infrastructureLayers: LayerProps[] = [
     await getRoads(bbox),
-    // await getRails(bbox),
+    await getRailways(bbox),
     await getSewer(bbox),
     await getWaterSupply(bbox),
     await getEnergySupply(bbox),
     await getGasSupply(bbox),
   ].map((infrastructureLayer: any) => {
     infrastructureLayer.opinion = "Občinsko mnenje";
-    infrastructureLayer.authority = "Agencija za jadnike";
+    infrastructureLayer.authority = "Agencija za /";
     return infrastructureLayer;
   });
 
@@ -30,15 +30,15 @@ const getRoads = async (bbox: BBox): Promise<LayerProps> => {
   return { name: layerName, data: data };
 };
 
-// const getRails = async (bbox: BBox): Promise<LayerProps> => {
-//   const layerName = LayerName.Railways;
-//   const name: string = "Železnice";
-//   const data = await makeTransformedAPIRequest(
-//     "https://king2.geosx.io/gurs/_sx1/sxtables/sxid_gurs_d96_gji_vp_zel/data/.json",
-//     bbox
-//   );
-//   return { name: layerName, data: data };
-// };
+const getRailways = async (bbox: BBox): Promise<LayerProps> => {
+  const layerName = LayerName.Railways;
+  const name: string = "Železnica";
+  const data = await makeTransformedAPIRequest(
+    "https://king2.geosx.io/gurs/_sx1/sxtables/sxid_gurs_d96_gji_vp_zel/data/.json",
+    bbox
+  );
+  return { name: layerName, data: data };
+};
 
 const getSewer = async (bbox: BBox): Promise<LayerProps> => {
   const layerName = LayerName.Sewer;

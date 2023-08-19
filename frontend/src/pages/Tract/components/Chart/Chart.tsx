@@ -2,7 +2,7 @@ import "./chart.sass";
 
 const CHART_WIDTH = 55;
 const CHART_PARTS = 5;
-const COLORS = ["#A8DA81", "#A8DA81", "#FFF96B", "#F87045"];
+const COLORS = ["#A8DA81", "#fff342", "#fff342", "#F87045"];
 const TEXT = ["Brez težav", "Enostavno", "Zapleteno", "Problematično"];
 
 interface ChartProps {

@@ -11,6 +11,7 @@ import Section from "../Section/Section";
 import { capitalizeFirstLetter } from "src/utils/stringManipulation";
 import { LayerData } from "src/types/permitEnums";
 import { getHighestLanduse } from "src/types/landuse";
+import { calculateCombinedValue, prettifyValue } from "src/utils/value";
 
 interface PopupProps {
   name: string;
@@ -18,6 +19,7 @@ interface PopupProps {
   feature: GeoJSON.Feature;
   onClose: () => void;
 }
+
 const Popup = ({ name, layerData, feature, onClose }: PopupProps) => {
   const tractContext = useContext(TractPageContext);
 
@@ -30,45 +32,51 @@ const Popup = ({ name, layerData, feature, onClose }: PopupProps) => {
   );
 
   const properties = feature.properties!;
+  const isParcel = name === "Parcela" || name === "Sosed";
 
-  const isParcel = name == "Parcela";
   const { data } = useQuery<GeoJSON.Feature | null>(
     ["organization", properties],
     () => getOrganization(layerData.regNo || properties["MAT_ST"]),
     {
-      enabled: !isParcel, // Only run the query if it is not `Parcel0` layer
+      enabled: !isParcel,
       onSuccess: (data) => {
         setOrganization(data);
       },
     }
   );
 
-  let parcelPopup = <></>;
-  let areaPopup = <></>;
-  console.log(feature.properties);
-
-  if (isParcel) {
+  const prepareParcelPopup = () => {
+    const apiDataSource =
+      name === "Parcela" ? tractContext.tractApi : tractContext.neighboursApi;
+    const apiData = apiDataSource.features.find(
+      (apiFeature) =>
+        apiFeature.properties!.EID_PARCEL === feature.properties!.parcel_id
+    );
+    console.log(apiData);
     const landuse = JSON.parse(properties.landuse);
-    console.log(landuse);
-    const landuseJoined = landuse
-      .map((landuse: any) => landuse.landuse)
-      .join(", ");
     const calculatedArea = calculateArea({
       type: "FeatureCollection",
       features: [feature],
     });
 
     let { unit, area } = formatArea(calculatedArea);
+    const combinedValue = calculateCombinedValue(
+      apiData?.properties.POSPLOSENA_VREDNOST?.toString() || null
+    );
+    const owner = apiData?.properties.LASTNIK_VSI
+      ? capitalizeFirstLetter(
+          apiData?.properties.LASTNIK_VSI.split("-")[1].split(",")[0]
+        )
+      : undefined;
 
-    // getHighestLanduse;
-    parcelPopup = (
+    return (
       <>
         <Section title="Pregled">
           <div className="overview">
             <OverviewItem
               image="src/assets/icons/home.svg"
-              value={feature.properties?.parcel_id}
-              hint="Šifra"
+              value={apiData?.properties.ST_PARCELE}
+              hint="Id"
             />
             <OverviewItem
               image="src/assets/icons/area.svg"
@@ -83,48 +91,64 @@ const Popup = ({ name, layerData, feature, onClose }: PopupProps) => {
             />
           </div>
         </Section>
-        <Section title="Raba">
-          <div className="overview">
-            {landuse.map(({ landuse, share, code }: any) => {
-              const landuseData = getHighestLanduse(code);
-              return (
-                <OverviewItem
-                  image={landuseData.img}
-                  value={
-                    capitalizeFirstLetter(landuse)
-                    // + ` (${share}%)`
-                    // (share == 100 ? "" : ` (${share}%)`)
-                  }
-                  hint={`${share} %`}
-                  hintColor={landuseData.color}
-                />
-              );
-            })}
-          </div>
-        </Section>
+        {(combinedValue || owner) && (
+          <Section title="Vrednost">
+            <div className="overview">
+              <OverviewItem
+                image="src/assets/icons/card.svg"
+                value={prettifyValue(combinedValue) || "/ €"}
+                hint="Cena"
+              />
+              <OverviewItem
+                image="src/assets/icons/person.svg"
+                value={owner}
+                hint="Lastnik"
+              />
+            </div>
+          </Section>
+        )}
+        {name === "Parcela" && (
+          <Section title="Raba">
+            <div className="overview">
+              {landuse.map(({ landuse, share, code }: any) => {
+                const landuseData = getHighestLanduse(code);
+                return (
+                  <OverviewItem
+                    image={landuseData.img}
+                    value={capitalizeFirstLetter(landuse)}
+                    hint={`${share} %`}
+                    hintColor={landuseData.color}
+                  />
+                );
+              })}
+            </div>
+          </Section>
+        )}
       </>
     );
-  } else {
-    const percentage = calculateIntersectionPercentage(tractContext.tract, {
-      type: "FeatureCollection",
-      features: [feature],
-    });
-    let info = "Ni podatkov";
-    if (name == "Varstvo voda") info = properties["SODRSV_IME"];
-    else if (name == "Elektrika") info = properties["OPIS"];
+  };
 
-    areaPopup = (
+  const prepareAreaPopup = () => {
+    return (
       <>
-        {/* <Chart percentage={percentage} showText={true} /> */}
-        <Section title="Pregled">
-          <div className="overview">
-            <OverviewItem
-              image="src/assets/icons/info.svg"
-              value={JSON.stringify(properties.OPIS, null, 2)}
-              hint="Več"
-            />
-          </div>
-        </Section>
+        {layerData.properties && layerData.properties.length > 0 && (
+          <Section title="Pregled">
+            <div className="overview">
+              <OverviewItem
+                image="src/assets/icons/info.svg"
+                value={
+                  capitalizeFirstLetter(
+                    properties[layerData.properties[0]] || "/"
+                  ) +
+                  (layerData.properties.length > 1
+                    ? ` (${properties[layerData.properties[1]]})`
+                    : "")
+                }
+                hint="Več"
+              />
+            </div>
+          </Section>
+        )}
         <Section title="Mnenje">
           <div className="overview">
             <OverviewItem
@@ -141,19 +165,17 @@ const Popup = ({ name, layerData, feature, onClose }: PopupProps) => {
         </Section>
       </>
     );
-  }
+  };
+
+  const popupContent = isParcel ? prepareParcelPopup() : prepareAreaPopup();
+
   return (
     <div className="popup" onClick={stopPropagation}>
       <div className="close" onClick={onClose}>
         <img src="/src/assets/icons/minimize.svg" />
       </div>
-      <p
-        className="title"
-        // style={{ color: layerData.color }}
-      >
-        {name}
-      </p>
-      {(isParcel && parcelPopup) || areaPopup}
+      <p className="title">{name}</p>
+      {popupContent}
     </div>
   );
 };

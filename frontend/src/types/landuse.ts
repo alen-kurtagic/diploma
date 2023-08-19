@@ -28,7 +28,7 @@ const getHighestLanduse = (
   } else if (code >= 50000 && code < 60000) {
     return {
       img: "src/assets/landuse/coal.svg",
-      color: "#484848",
+      color: "#787878",
       hint: "Druga",
     };
   }

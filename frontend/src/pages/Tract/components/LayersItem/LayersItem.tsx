@@ -9,7 +9,7 @@ interface LayersItemProps {
   layerData: LayerData;
   // category: Category;
   visibility: boolean;
-  difficulty: number;
+  difficulty?: number | null;
   // color: string;
   // data: GeoJSON.FeatureCollection;
 }
@@ -62,6 +62,9 @@ const LayersItem = ({
 
   // const numberOfFeatures: number = data.features.length;
 
+  let prompt = "/";
+  if (name === "Parcela") prompt = "Izbrane parcele";
+  else if (name === "Sosed") prompt = "Sosednje parcele";
   return (
     <div
       className={`permit-container ${opened && "opened"}`}
@@ -80,8 +83,8 @@ const LayersItem = ({
           >
             {name}
           </p>
-          <p className="subtitle">{layerData.permit || "Izbrane parcele"}</p>
-          {difficulty != undefined && (
+          <p className="subtitle">{layerData.permit || prompt}</p>
+          {difficulty && difficulty > 0 != undefined && (
             <Chart percentage={difficulty} showText={isHovering} />
           )}
         </div>

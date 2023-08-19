@@ -39,7 +39,7 @@ const getLocalWater = async (bbox: BBox): Promise<LayerProps> => {
 
 const getBeach = async (bbox: BBox): Promise<LayerProps> => {
   const layerName = LayerName.Beach;
-  const name: string = "Priobalno morje";
+  const name: string = "Priobalno";
   const data = await makeTransformedAPIRequest(
     "https://king2.geosx.io/arso/_sx1/sxtables/sxid_drsv_d96_vvo_obc_obm/data/.json",
     bbox

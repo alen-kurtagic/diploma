@@ -5,7 +5,8 @@ import { transformPolygonCoordinates } from "src/utils/transformPolygon";
 
 async function makeTransformedAPIRequest(
   apiEndpoint: string,
-  originalBoundingBox: BBox
+  originalBoundingBox: BBox,
+  filter?: string
 ): Promise<GeoJSON.FeatureCollection> {
   const originalProjection: string = "EPSG:3857";
   const targetProjection: string = "EPSG:3794";
@@ -20,7 +21,8 @@ async function makeTransformedAPIRequest(
   // Make the API request with the transformed bounding box
   const response: GeoJSON.FeatureCollection = await makeAPIRequest(
     apiEndpoint,
-    transformedBoundingBox
+    transformedBoundingBox,
+    filter
   );
 
   // Transform the response data coordinates back to the original projection
@@ -87,14 +89,16 @@ function transformResponseData(
 
 async function makeAPIRequest(
   apiEndpoint: string,
-  bbox: BBox
+  bbox: BBox,
+  filter?: string
 ): Promise<GeoJSON.FeatureCollection> {
   // Make the API request using the provided endpoint and bounding box
   //   const params = new URLSearchParams({
   //     bbox: bbox.join(","),
   //   });
 
-  const url = `${apiEndpoint}?bbox=${bbox.join(",")}`;
+  const filterString = filter ? `filter=${filter}&` : "";
+  const url = `${apiEndpoint}?${filterString}bbox=${bbox.join(",")}`;
 
   try {
     const response = await fetch(url);

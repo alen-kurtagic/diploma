@@ -3,6 +3,7 @@ import { logger } from "./middlewares/logger";
 import parcelsRoute from "./routes/parcels";
 import streetsRoute from "./routes/streets";
 import express, { Application } from "express";
+import { PORT } from "./config/db";
 
 const app: Application = express();
 
@@ -11,6 +12,6 @@ app.use(logger);
 app.use(parcelsRoute);
 app.use(streetsRoute);
 
-app.listen(process.env.PORT || 3000, function () {
-  console.log("Parcelko server is listening on port 3000");
+app.listen(PORT, function () {
+  console.log(`Server is listening on port ${PORT}`);
 });

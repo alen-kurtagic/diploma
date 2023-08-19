@@ -36,4 +36,13 @@ const getParcelsByIds = async (
   return fetchData(url);
 };
 
-export { getParcelsByBBox, getParcelsByIds };
+const getNeigboursById = async (
+  ids: Array<string>
+): Promise<GeoJSON.FeatureCollection> => {
+  const url = `http://localhost:3000/data/parcels/neighbours?ids=${ids.join(
+    ","
+  )}`;
+  return fetchData(url);
+};
+
+export { getParcelsByBBox, getParcelsByIds, getNeigboursById };

@@ -10,6 +10,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./tract-page.sass";
 import { LayerProps } from "./components/MapLayer/MapLayer";
 import { getLayerDataByName } from "src/types/permitEnums";
+import { TractApiGeoJSON } from "src/services/api/parcels/parcel";
 
 interface TractPageState {
   viewState: any;
@@ -20,6 +21,12 @@ interface TractPageState {
   setLoading: (loading: boolean) => void;
   tract: GeoJSON.FeatureCollection;
   setTract: (tract: GeoJSON.FeatureCollection) => void;
+  neighbours: GeoJSON.FeatureCollection;
+  setNeighbours: (neigbours: GeoJSON.FeatureCollection) => void;
+  neighboursApi: TractApiGeoJSON;
+  setNeighboursApi: (neigboursApi: TractApiGeoJSON) => void;
+  tractApi: TractApiGeoJSON;
+  setTractApi: (tractApi: TractApiGeoJSON) => void;
   layers: LayerProps[];
   setLayers: (newLayers: Array<any>) => void;
   settlements: Array<string>;
@@ -48,6 +55,21 @@ const createInitialTractPageState = (): TractPageState => {
       features: [],
     },
     setTract: () => {},
+    neighbours: {
+      type: "FeatureCollection",
+      features: [],
+    },
+    setNeighbours: () => {},
+    tractApi: {
+      type: "FeatureCollection",
+      features: [],
+    },
+    setTractApi: () => {},
+    neighboursApi: {
+      type: "FeatureCollection",
+      features: [],
+    },
+    setNeighboursApi: () => {},
     layers: [],
     setLayers: () => {},
     settlements: [],
@@ -92,6 +114,21 @@ const TractPage = () => {
     features: [],
   });
 
+  const [neighbours, setNeighbours] = useState<GeoJSON.FeatureCollection>({
+    type: "FeatureCollection",
+    features: [],
+  });
+
+  const [tractApi, setTractApi] = useState<TractApiGeoJSON>({
+    type: "FeatureCollection",
+    features: [],
+  });
+
+  const [neighboursApi, setNeighboursApi] = useState<TractApiGeoJSON>({
+    type: "FeatureCollection",
+    features: [],
+  });
+
   const [layers, setLayers] = useState<Array<any>>([]);
   const [popups, setPopups] = useState([]);
 
@@ -126,6 +163,35 @@ const TractPage = () => {
     setViewState({ ...viewState, ...newViewState });
   };
 
+  useEffect(() => {
+    // Reset the state to its initial values when the route changes
+    console.log("resetting");
+    setLoading(true);
+    setFilter("");
+    setTract({
+      type: "FeatureCollection",
+      features: [],
+    });
+    setNeighbours({
+      type: "FeatureCollection",
+      features: [],
+    });
+    setTractApi({
+      type: "FeatureCollection",
+      features: [],
+    });
+    setLayers([]);
+    setPopups([]);
+    setSettlements([]);
+    setStreets([]);
+    setSelectedFeatureId(undefined);
+    setViewState({
+      latitude: 46.1491664,
+      longitude: 14.9860106,
+      zoom: 7,
+    });
+  }, [location]);
+
   const reactMapRef = useRef<MapRef>(null);
 
   return (
@@ -139,6 +205,12 @@ const TractPage = () => {
         setLoading,
         tract,
         setTract,
+        neighbours,
+        setNeighbours,
+        tractApi,
+        setTractApi,
+        neighboursApi,
+        setNeighboursApi,
         layers,
         setLayers,
         settlements,

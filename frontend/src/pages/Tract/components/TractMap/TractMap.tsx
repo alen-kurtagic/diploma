@@ -1,12 +1,15 @@
 import { useContext, useState, useEffect, useCallback } from "react";
 import { Marker, Map as ReactMap, ViewStateChangeEvent } from "react-map-gl";
-import maplibregl from "maplibre-gl";
+import maplibregl, { GeoJSONFeature } from "maplibre-gl";
 import { TractPageContext } from "src/pages/Tract/TractPage";
 import bbox from "@turf/bbox";
 import "./tract-map.sass";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { BBox } from "@turf/turf";
-import { getParcelsByIds } from "src/services/database/parcel";
+import { BBox, intersect } from "@turf/turf";
+import {
+  getNeigboursById,
+  getParcelsByIds,
+} from "src/services/database/parcel";
 import { getStreetsByIds } from "src/services/database/street";
 import getAllAPILayers from "src/services/api/layers/apiCaller";
 import MapLayer, { LayerProps } from "../MapLayer/MapLayer";
@@ -15,6 +18,7 @@ import Popup from "../Popup/Popup";
 import { useQuery } from "react-query";
 import { calculateArea } from "src/utils/surfaceArea";
 import { getLayerDataByName } from "src/types/permitEnums";
+import { getApiParcels } from "src/services/api/parcels/parcel";
 
 // React functional component of the Mp
 const TractMap = () => {
@@ -49,7 +53,7 @@ const TractMap = () => {
   };
 
   const updateMaxBounds = (bounds: BBox) => {
-    const ratio = 10; // ratio that represents max bounds size to the tract size
+    const ratio = 15; // ratio that represents max bounds size to the tract size
 
     const lngDiff: number = bounds[2] - bounds[0]; // width
     const latDiff = bounds[3] - bounds[1]; // height
@@ -67,26 +71,68 @@ const TractMap = () => {
 
   const fetchTractData = async () => {
     const tract = await getParcelsByIds(tractContext.ids!);
+    const neighbours = await getNeigboursById(tractContext.ids!);
+    const tractApi = await getApiParcels(tractContext.ids!);
+    const neighbours_ids: string[] = neighbours.features.map(
+      (feature: GeoJSON.Feature) => feature.properties!.parcel_id
+    );
+    const neighboursApi = await getApiParcels(neighbours_ids);
+    console.log(neighboursApi);
     const tractBounds: BBox = bbox(tract) as BBox;
     const layers: LayerProps[] = await getAllAPILayers(tractBounds);
 
     const streets: Array<string> = await getStreetsByIds(tractContext.ids!);
 
-    return { tract, layers, streets };
+    return { tract, neighbours, tractApi, neighboursApi, layers, streets };
   };
 
   const { data, isLoading, isError } = useQuery("tractMapData", fetchTractData);
 
+  function getDifficulty(intersectionPercentage: number): number | null {
+    if (!intersectionPercentage) return null;
+    // Step 1: Logarithmic Transformation
+    intersectionPercentage = Math.max(Math.min(intersectionPercentage, 100), 1);
+    const logValue =
+      25 * (Math.log(intersectionPercentage) / Math.log(100)) - 1;
+
+    const normalizedValue = logValue / 2.5;
+    // console.log(
+    //   "intersection: " +
+    //     intersectionPercentage +
+    //     " normalized: " +
+    //     normalizedValue
+    // );
+
+    return normalizedValue;
+  }
+
   useEffect(() => {
-    if (isLoading || isError || !data) return;
+    if (isLoading || isError || !data) {
+      // tractContext.setTract({ type: "FeatureCollection", features: [] });
+      // tractContext.setTractApi({ type: "FeatureCollection", features: [] });
+      // tractContext.setLayers([]);
+      // tractContext.setStreets([]);
+      tractContext.setLoading(true); // Always call setLoading here
+      return;
+    }
 
     tractContext.setTract(data.tract);
+    tractContext.setNeighbours(data.neighbours);
+    tractContext.setTractApi(data.tractApi);
+    tractContext.setNeighboursApi(data.neighboursApi);
+    tractContext.setNeighboursApi(data.neighboursApi);
     const tractLayer: LayerProps = {
       name: "Parcela",
-      color: "#0D99FF",
       opacity: 1,
       visibility: true,
       data: data.tract,
+    };
+
+    const neighboursLayer: LayerProps = {
+      name: "Sosed",
+      opacity: 0.4,
+      visibility: true,
+      data: data.neighbours,
     };
     const layersFromAPI = data.layers
       .map((layer: LayerProps) => {
@@ -115,10 +161,12 @@ const TractMap = () => {
 
         if (intersectionPercent === 0 || Number.isNaN(intersectionPercent))
           return null;
+
+        const difficulty = getDifficulty(intersectionPercent);
         return {
           name: layer.name,
           color: layer.color,
-          difficulty: intersectionPercent,
+          difficulty: difficulty,
           visibility: true,
           data: layer.data,
           surfaceArea: surfaceArea, // Include surfaceArea in the returned object
@@ -127,7 +175,7 @@ const TractMap = () => {
       .filter((layer) => layer !== null)
       .sort((a: any, b: any) => a.surfaceArea - b.surfaceArea); // Order in ascending order
 
-    tractContext.setLayers([tractLayer, ...layersFromAPI]);
+    tractContext.setLayers([tractLayer, neighboursLayer, ...layersFromAPI]);
     tractContext.setStreets(data.streets);
     tractContext.setLoading(false);
   }, [data, isLoading, isError]);
