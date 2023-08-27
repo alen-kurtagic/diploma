@@ -1,2 +1,1 @@
-# gradbena-soglasja
-Gradbena-Soglasja
+# Diploma
